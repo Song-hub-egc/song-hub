@@ -43,7 +43,9 @@ def get_host_for_testing(test_type: str) -> str:
     if working_dir in host_mapping[test_type]:
         return host_mapping[test_type][working_dir]
     else:
-        raise ValueError(f"Unknown WORKING_DIR value: {working_dir}")
+        # Fallback: if WORKING_DIR is not recognized, assume localhost (CI/CD or development)
+        # This handles GitHub Actions, GitLab CI, or any other CI environment
+        return "http://localhost:5000"
 
 
 def get_host_for_locust_testing() -> str:
