@@ -76,12 +76,15 @@ jobs:
       - name: Wait for MariaDB
         run: |
           for i in {1..30}; do
-            if mariadb -h 127.0.0.1 -u $MARIADB_USER -p$MARIADB_PASSWORD -e "SELECT 1" &> /dev/null; then
-              echo "MariaDB is ready!"
+            if nc -z 127.0.0.1 3306; then
+              echo "MariaDB port 3306 is open!"
+              sleep 2  # Extra wait for full initialization
               exit 0
             fi
+            echo "Waiting for MariaDB... attempt $i"
             sleep 2
           done
+          echo "MariaDB failed to start"
           exit 1
 
       - name: Wait for Selenium Grid
