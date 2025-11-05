@@ -20,9 +20,11 @@ jobs:
       MARIADB_PORT: 3306
       FLASK_ENV: testing
       SECRET_KEY: test-secret-key-for-ci
-      WORKING_DIR: /home/runner/work/song-hub/song-hub
+      WORKING_DIR: /app/  # ← IMPORTANTE: Debe ser "/app/" para activar modo remoto
+      SERVICE_DRIVER: chrome
       # Selenium Grid
       SELENIUM_GRID_URL: http://localhost:4444
+      SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
 
     services:
       mariadb:
@@ -78,7 +80,7 @@ jobs:
           for i in {1..30}; do
             if nc -z 127.0.0.1 3306; then
               echo "MariaDB port 3306 is open!"
-              sleep 2  # Extra wait for full initialization
+              sleep 2
               exit 0
             fi
             echo "Waiting for MariaDB... attempt $i"
@@ -97,28 +99,51 @@ jobs:
             echo "Waiting for Selenium Grid... attempt $i"
             sleep 2
           done
+          echo "Selenium Grid failed to start"
           exit 1
 
+      - name: Check Selenium Grid nodes
+        run: |
+          echo "Checking Selenium Grid status:"
+          curl -s http://localhost:4444/status | jq '.' || curl -s http://localhost:4444/status
+
       - name: Create version file
-        run: echo "test-version" > .version
+        run: echo "ci-test-version" > .version
 
       - name: Run migrations
         run: |
           export FLASK_APP=app
-          flask db upgrade || echo "No migrations"
+          flask db upgrade || echo "No migrations to run"
 
       - name: Start Flask app
         run: |
           flask run --host=0.0.0.0 --port=5000 &
-          sleep 5
+          FLASK_PID=$!
+          echo "Flask PID: $FLASK_PID"
+          sleep 10
         env:
           FLASK_APP: app
 
+      - name: Verify Flask is running
+        run: |
+          for i in {1..15}; do
+            if curl -f http://localhost:5000 &> /dev/null; then
+              echo "Flask app is responding!"
+              curl -I http://localhost:5000
+              exit 0
+            fi
+            echo "Waiting for Flask app... attempt $i"
+            sleep 2
+          done
+          echo "Flask app failed to start properly"
+          exit 1
+
       - name: Run Selenium Tests
         run: |
-          pytest app/modules/ -k selenium -v --tb=short
+          pytest app/modules/ -k selenium -v --tb=short -s
         env:
-          SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
+          WORKING_DIR: /app/
+          SERVICE_DRIVER: chrome
 
       - name: Upload test artifacts
         if: failure()
@@ -128,3 +153,4 @@ jobs:
           path: |
             screenshots/
             logs/
+            *.png
