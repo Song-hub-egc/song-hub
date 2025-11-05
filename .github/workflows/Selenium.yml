@@ -20,11 +20,12 @@ jobs:
       MARIADB_PORT: 3306
       FLASK_ENV: testing
       SECRET_KEY: test-secret-key-for-ci
-      WORKING_DIR: /app/  # ← IMPORTANTE: Debe ser "/app/" para activar modo remoto
+      # NO uses WORKING_DIR=/app/ aquí
+      WORKING_DIR: ${{ github.workspace }}
       SERVICE_DRIVER: chrome
-      # Selenium Grid
-      SELENIUM_GRID_URL: http://localhost:4444
-      SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
+      # Para forzar modo remoto de Selenium
+      USE_SELENIUM_GRID: true
+      SELENIUM_HUB_URL: http://localhost:4444/wd/hub
 
     services:
       mariadb:
@@ -102,10 +103,10 @@ jobs:
           echo "Selenium Grid failed to start"
           exit 1
 
-      - name: Check Selenium Grid nodes
+      - name: Check Selenium Grid status
         run: |
-          echo "Checking Selenium Grid status:"
-          curl -s http://localhost:4444/status | jq '.' || curl -s http://localhost:4444/status
+          echo "Selenium Grid status:"
+          curl -s http://localhost:4444/status | python3 -m json.tool || curl -s http://localhost:4444/status
 
       - name: Create version file
         run: echo "ci-test-version" > .version
@@ -115,11 +116,10 @@ jobs:
           export FLASK_APP=app
           flask db upgrade || echo "No migrations to run"
 
-      - name: Start Flask app
+      - name: Start Flask app in background
         run: |
-          flask run --host=0.0.0.0 --port=5000 &
-          FLASK_PID=$!
-          echo "Flask PID: $FLASK_PID"
+          nohup flask run --host=0.0.0.0 --port=5000 > flask.log 2>&1 &
+          echo $! > flask.pid
           sleep 10
         env:
           FLASK_APP: app
@@ -135,15 +135,22 @@ jobs:
             echo "Waiting for Flask app... attempt $i"
             sleep 2
           done
-          echo "Flask app failed to start properly"
+          echo "Flask app failed to start"
+          cat flask.log
           exit 1
 
       - name: Run Selenium Tests
         run: |
           pytest app/modules/ -k selenium -v --tb=short -s
         env:
-          WORKING_DIR: /app/
-          SERVICE_DRIVER: chrome
+          USE_SELENIUM_GRID: true
+          SELENIUM_HUB_URL: http://localhost:4444/wd/hub
+
+      - name: Show Flask logs on failure
+        if: failure()
+        run: |
+          echo "=== Flask logs ==="
+          cat flask.log || echo "No flask logs found"
 
       - name: Upload test artifacts
         if: failure()
@@ -153,4 +160,5 @@ jobs:
           path: |
             screenshots/
             logs/
+            flask.log
             *.png
