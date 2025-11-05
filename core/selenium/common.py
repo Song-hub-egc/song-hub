@@ -20,12 +20,13 @@ def set_service_driver(driver="firefox"):
 def initialize_driver():
     """
     Initialize the WebDriver depending on the environment:
-    - If WORKING_DIR == '/app/': assume Docker + Selenium Grid (remote).
+    - If WORKING_DIR == '/app/' OR USE_SELENIUM_GRID is set: assume Docker + Selenium Grid (remote).
     - Otherwise: run locally using webdriver_manager.
     Keeps compatibility with Firefox Snap (TMPDIR fix).
     """
     working_dir = os.environ.get("WORKING_DIR", "")
-    selenium_hub_url = "http://selenium-hub:4444/wd/hub"
+    use_selenium_grid = os.environ.get("USE_SELENIUM_GRID", "").lower() in ("true", "1", "yes")
+    selenium_hub_url = os.environ.get("SELENIUM_HUB_URL", "http://selenium-hub:4444/wd/hub")
     driver_name = get_service_driver()
 
     # --- Firefox Snap fix ---
@@ -35,12 +36,16 @@ def initialize_driver():
         os.environ["TMPDIR"] = snap_tmp
 
     # --- Remote mode (Selenium Grid) ---
-    if working_dir == "/app/":
+    if working_dir == "/app/" or use_selenium_grid:
         if driver_name == "chrome":
             options = webdriver.ChromeOptions()
+            options.add_argument("--headless")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
             driver = webdriver.Remote(command_executor=selenium_hub_url, options=options)
         elif driver_name == "firefox":
             options = webdriver.FirefoxOptions()
+            options.add_argument("--headless")
             driver = webdriver.Remote(command_executor=selenium_hub_url, options=options)
         else:
             raise Exception(f"Driver '{driver_name}' not supported.")
@@ -49,11 +54,15 @@ def initialize_driver():
     # --- Local mode ---
     if driver_name == "chrome":
         options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
         service = ChromeService(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
 
     elif driver_name == "firefox":
         options = webdriver.FirefoxOptions()
+        options.add_argument("--headless")
         service = FirefoxService(GeckoDriverManager().install())
         driver = webdriver.Firefox(service=service, options=options)
 
