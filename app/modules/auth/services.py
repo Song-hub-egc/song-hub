@@ -76,3 +76,40 @@ class AuthenticationService(BaseService):
 
     def temp_folder_by_user(self, user: User) -> str:
         return os.path.join(uploads_folder_name(), "temp", str(user.id))
+
+    def setup_two_factor(self, user: User) -> tuple[str, list[str]]:
+        secret = user.generate_totp_secret()
+        qr_code = user.get_qr_code()
+        self.repository.session.commit()
+        return qr_code, secret
+
+    def enable_two_factor(self, user: User, token: str) -> bool:
+        if not user.two_factor_secret:
+            return False
+
+        if not user.verify_totp(token, check_enabled=False):
+            return False
+
+        user.two_factor_enabled = True
+        backup_codes = user.generate_backup_codes()
+        self.repository.session.commit()
+        return backup_codes
+
+    def disable_two_factor(self, user: User) -> bool:
+        user.two_factor_enabled = False
+        user.two_factor_secret = None
+        user.backup_codes = None
+        self.repository.session.commit()
+        return True
+
+    def verify_two_factor_token(self, user: User, token: str, is_backup: bool = False) -> bool:
+        if is_backup:
+            return user.verify_backup_code(token)
+        return user.verify_totp(token)
+
+    def regenerate_backup_codes(self, user: User) -> list[str]:
+        if not user.two_factor_enabled:
+            return []
+        backup_codes = user.generate_backup_codes()
+        self.repository.session.commit()
+        return backup_codes
