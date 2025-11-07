@@ -90,8 +90,10 @@ Pygments==2.19.2
 PyMySQL==1.1.1
 pyOpenSSL==25.1.0
 pyparsing==3.2.3
+pyotp==2.9.0
 PySocks==1.7.1
 pytest==8.4.1
+qrcode==7.4.2
 pytest-cov==6.2.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
