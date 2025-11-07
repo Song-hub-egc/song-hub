@@ -1,5 +1,11 @@
+import base64
+import io
+import json
+import secrets
 from datetime import datetime, timezone
 
+import pyotp
+import qrcode
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -12,6 +18,10 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(256), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    two_factor_secret = db.Column(db.String(32), nullable=True)
+    two_factor_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    backup_codes = db.Column(db.Text, nullable=True)
 
     data_sets = db.relationship("DataSet", backref="user", lazy=True)
     profile = db.relationship("UserProfile", backref="user", uselist=False)
@@ -34,3 +44,57 @@ class User(db.Model, UserMixin):
         from app.modules.auth.services import AuthenticationService
 
         return AuthenticationService().temp_folder_by_user(self)
+
+    def generate_totp_secret(self) -> str:
+        self.two_factor_secret = pyotp.random_base32()
+        return self.two_factor_secret
+
+    def get_totp_uri(self) -> str:
+        if not self.two_factor_secret:
+            return ""
+        return pyotp.totp.TOTP(self.two_factor_secret).provisioning_uri(
+            name=self.email,
+            issuer_name="UVLHUB.IO"
+        )
+
+    def verify_totp(self, token: str, check_enabled: bool = True) -> bool:
+        if not self.two_factor_secret:
+            return False
+        if check_enabled and not self.two_factor_enabled:
+            return False
+        totp = pyotp.TOTP(self.two_factor_secret)
+        return totp.verify(token, valid_window=1)
+
+    def generate_backup_codes(self, count: int = 10) -> list[str]:
+        codes = [secrets.token_hex(4).upper() for _ in range(count)]
+        hashed_codes = [generate_password_hash(code) for code in codes]
+        self.backup_codes = json.dumps(hashed_codes)
+        return codes
+
+    def verify_backup_code(self, code: str) -> bool:
+        if not self.backup_codes:
+            return False
+
+        hashed_codes = json.loads(self.backup_codes)
+        for idx, hashed_code in enumerate(hashed_codes):
+            if check_password_hash(hashed_code, code.upper()):
+                hashed_codes.pop(idx)
+                self.backup_codes = json.dumps(hashed_codes)
+                db.session.commit()
+                return True
+        return False
+
+    def get_qr_code(self) -> str:
+        uri = self.get_totp_uri()
+        if not uri:
+            return ""
+
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(uri)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffered = io.BytesIO()
+        img.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        return f"data:image/png;base64,{img_str}"

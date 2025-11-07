@@ -28,6 +28,40 @@
 
     </div>
 
+    <div class="col-12 col-md-8 col-lg-6 mt-4">
+
+        <div class="card shadow-sm">
+            <div class="card-header card-dark">
+                <h5 class="card-title mb-0" style="color: white; font-size: 15px;">Security Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><i class="fa fa-shield"></i> Two-Factor Authentication</h6>
+                    {% if user.two_factor_enabled %}
+                    <p class="text-success">
+                        <i class="fa fa-check-circle"></i> Enabled
+                    </p>
+                    <form method="post" action="{{ url_for('auth.disable_two_factor') }}" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to disable two-factor authentication?');">Disable 2FA</button>
+                    </form>
+                    <form method="post" action="{{ url_for('auth.regenerate_backup_codes') }}" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-secondary">Regenerate Backup Codes</button>
+                    </form>
+                    {% else %}
+                    <p class="text-muted">
+                        <i class="fa fa-times-circle"></i> Not enabled
+                    </p>
+                    <a href="{{ url_for('auth.setup_two_factor') }}" class="btn btn-sm btn-primary">Enable 2FA</a>
+                    <p class="text-muted mt-2">
+                        <small>Add an extra layer of security to your account by requiring a code from your phone in addition to your password.</small>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </div>
 
 <h1 class="h3 mb-3">User datasets</h1>

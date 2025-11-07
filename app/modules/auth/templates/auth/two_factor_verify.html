@@ -1,0 +1,71 @@
+{% extends "base_template.html" %}
+
+{% block title %}Two-Factor Authentication{% endblock %}
+
+{% block content %}
+
+<h1 class="h2 mb-3"><b>Two-Factor Authentication</b></h1>
+
+<div class="row">
+    <div class="col-12">
+
+        <p>Enter the 6-digit code from your authenticator app.</p>
+
+        <form action="" method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="row">
+
+                <div class="col-md-6 col-lg-6 col-xs-12">
+                    <div class="mb-3">
+                        {{ form.token.label(class="form-label") }}
+                        {{ form.token(class="form-control", placeholder="000000", autocomplete="off") }}
+                        {% for error in form.token.errors %}
+                        <span style="color: red;">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6 col-lg-6 col-xs-12">
+                    <div class="mb-3">
+                        {{ form.use_backup_code(class="form-check-input") }}
+                        {{ form.use_backup_code.label(class="form-check-label") }}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-lg-6 col-12">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                {% if error %}
+
+                <div class="mt-3 col-lg-6 col-12">
+                    <span style="color: red;">{{ error }}</span>
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('auth.scripts') }}"></script>
+{% endblock %}
