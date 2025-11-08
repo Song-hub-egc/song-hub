@@ -10,7 +10,6 @@ on:
   # Trigger the workflow on every push to any branch
   push:
   # Trigger the workflow on every pull request (opened, synchronized, or updated)
-  pull_request:
 
 jobs:
   check:
