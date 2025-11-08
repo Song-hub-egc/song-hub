@@ -1,9 +1,9 @@
 name: Sonarqube
 
 on:
-    push:
-      branches:
-        - main
+  push:
+    branches:
+      - main
 
 jobs:
 
@@ -49,12 +49,12 @@ jobs:
         pytest --cov=app/modules --cov-report=xml --ignore-glob='selenium'
 
     - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        with:
-          args: >
-            -Dsonar.organization=egc-songhub
-            -Dsonar.projectKey=egc-songhub_songhub
-            -Dsonar.projectName=songhub
-            -Dsonar.login=${{ secrets.TOKEN_SONAR }}
-            -Dsonar.branch.name=master
-            -Dsonar.python.coverage.reportPaths=coverage.xml
+      uses: SonarSource/sonarcloud-github-action@master
+      with:
+        args: >
+          -Dsonar.organization=egc-songhub
+          -Dsonar.projectKey=egc-songhub_songhub
+          -Dsonar.projectName=songhub
+          -Dsonar.login=${{ secrets.TOKEN_SONAR }}
+          -Dsonar.branch.name=master
+          -Dsonar.python.coverage.reportPaths=coverage.xml

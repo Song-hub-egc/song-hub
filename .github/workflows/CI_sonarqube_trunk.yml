@@ -1,9 +1,9 @@
-name: Deploy to Render
+name: Sonarqube
 
 on:
   push:
     branches:
-      - main
+      - trunk
 
 jobs:
 
@@ -46,18 +46,15 @@ jobs:
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
       run: |
-        pytest app/modules/ --ignore-glob='selenium'
+        pytest --cov=app/modules --cov-report=xml --ignore-glob='selenium'
 
-  deploy:
-    name: Deploy to Render
-    needs: testing
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-
-      - name: Deploy to Render
-        env:
-          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: |
-          curl "$deploy_url"
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      with:
+        args: >
+          -Dsonar.organization=egc-songhub
+          -Dsonar.projectKey=egc-songhub_trunk
+          -Dsonar.projectName=trunk
+          -Dsonar.login=${{ secrets.TOKEN_SONAR }}
+          -Dsonar.branch.name=master
+          -Dsonar.python.coverage.reportPaths=coverage.xml
