@@ -46,7 +46,7 @@ jobs:
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
       run: |
-        pytest --cov=app/modules --cov-report=xml --ignore-glob='selenium'
+        pytest --cov=app/modules --cov-report=xml --ignore-glob='*selenium*'
 
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
