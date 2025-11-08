@@ -10,7 +10,6 @@ on:
   # Trigger on every push to any branch
   push:
   # Trigger on every pull request (opened, updated, or synchronized)
-  pull_request:
 
 jobs:
   lint:
