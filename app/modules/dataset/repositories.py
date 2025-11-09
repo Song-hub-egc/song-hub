@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from flask_login import current_user
@@ -98,6 +98,53 @@ class DataSetRepository(BaseRepository):
             .limit(5)
             .all()
         )
+    
+    def get_trending_datasets(self, period_days: int = 7, limit: int = 10):
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=period_days)
+
+        downloads_subquery = (
+            self.session.query(
+                DSDownloadRecord.dataset_id,
+                func.count(func.distinct(DSDownloadRecord.id)).label('download_count')
+            )
+            .filter(DSDownloadRecord.download_date >= cutoff_date)
+            .group_by(DSDownloadRecord.dataset_id)
+            .subquery()
+        )
+
+        views_subquery = (
+            self.session.query(
+                DSViewRecord.dataset_id,
+                func.count(func.distinct(DSViewRecord.id)).label('view_count')
+            )
+            .filter(DSViewRecord.view_date >= cutoff_date)
+            .group_by(DSViewRecord.dataset_id)
+            .subquery()
+        )
+
+        total_activity_col = (
+            func.coalesce(downloads_subquery.c.download_count, 0) +
+            func.coalesce(views_subquery.c.view_count, 0)
+        )
+
+        result = (
+            self.session.query(
+                DataSet,
+                func.coalesce(downloads_subquery.c.download_count, 0).label('downloads'),
+                func.coalesce(views_subquery.c.view_count, 0).label('views'),
+                total_activity_col.label('total_activity')
+            )
+            .join(DSMetaData, DataSet.ds_meta_data_id == DSMetaData.id)
+            .outerjoin(downloads_subquery, DataSet.id == downloads_subquery.c.dataset_id)
+            .outerjoin(views_subquery, DataSet.id == views_subquery.c.dataset_id)
+            .filter(DSMetaData.dataset_doi.isnot(None))
+            .filter(total_activity_col > 0)
+            .order_by(desc(total_activity_col))
+            .limit(limit)
+            .all()
+        )
+
+        return result
 
 
 class DOIMappingRepository(BaseRepository):

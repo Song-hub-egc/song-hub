@@ -91,6 +91,37 @@ class DataSetService(BaseService):
 
     def total_dataset_views(self) -> int:
         return self.dsviewrecord_repostory.total_dataset_views()
+    
+    def get_trending_datasets(self, period='week', limit=10):
+        period_days = 7 if period == 'week' else 30 if period == 'month' else 7
+
+        trending_data = self.repository.get_trending_datasets(
+            period_days=period_days,
+            limit=limit,
+        )
+
+        result = []
+        for dataset, downloads, views, total_activity in trending_data:
+            authors = dataset.ds_meta_data.authors
+            main_author = authors[0].name if authors else "Unknown"
+
+            community = None
+            if dataset.ds_meta_data.tags:
+                tags = dataset.ds_meta_data.tags.split(',')
+                community = tags[0].strip() if tags else None
+
+            result.append({
+                'id': dataset.id,
+                'title': dataset.ds_meta_data.title,
+                'main_author': main_author,
+                'community': community,
+                'downloads': int(downloads),
+                'views': int(views),
+                'total_activity': int(total_activity),
+                'dataset': dataset,
+            })
+
+        return result
 
     def create_from_form(self, form, current_user) -> DataSet:
         main_author = {
