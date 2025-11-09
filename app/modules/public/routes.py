@@ -27,6 +27,9 @@ def index():
     total_dataset_views = dataset_service.total_dataset_views()
     total_feature_model_views = feature_model_service.total_feature_model_views()
 
+    # Trending datasets
+    trending_datasets = dataset_service.get_trending_datasets(period='week', limit=3)
+
     return render_template(
         "public/index.html",
         datasets=dataset_service.latest_synchronized(),
@@ -36,4 +39,5 @@ def index():
         total_feature_model_downloads=total_feature_model_downloads,
         total_dataset_views=total_dataset_views,
         total_feature_model_views=total_feature_model_views,
+        trending_datasets=trending_datasets,
     )

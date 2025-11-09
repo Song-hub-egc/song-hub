@@ -185,3 +185,97 @@
     padding: 5px;
     border-radius: 3px;
 }
+
+.trending-item {
+    transition: all 0.2s ease;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.trending-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.trending-badge {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.trending-badge-1 {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+}
+
+.trending-badge-2 {
+    background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(192, 192, 192, 0.3);
+}
+
+.trending-badge-3 {
+    background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(205, 127, 50, 0.3);
+}
+
+.trending-badge-4, .trending-badge-5 {
+    background-color: #e9ecef;
+    color: #6c757d;
+}
+
+.trending-stats {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.trending-stats .feather-xs {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+}
+
+.trending-top-1 {
+    border-left: 3px solid #FFD700;
+}
+
+.trending-top-2 {
+    border-left: 3px solid #C0C0C0;
+}
+
+.trending-top-3 {
+    border-left: 3px solid #CD7F32;
+}
+
+.trending-card-modern {
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.trending-card-modern:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.trending-medal-svg {
+    display: inline-block;
+}
+
+.trending-downloads-badge-simple {
+    display: inline-block;
+    background-color: #e3f2fd;
+    color: #1976d2;
+    font-weight: 400;
+    font-size: 13px;
+    padding: 6px 16px;
+    border-radius: 16px;
+}

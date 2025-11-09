@@ -4,8 +4,69 @@
 
 {% block content %}
 
-    <h1 class="h2 mb-3">
+{% if trending_datasets %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h2 mb-3">
+            <i data-feather="trending-up"></i> <b>Trending</b> this week
+        </h1>
+        <div class="row">
+            {% for item in trending_datasets[:3] %}
+            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 mb-3">
+                <div class="card trending-card-modern h-100">
+                    <div class="card-body text-center">
+                        <div class="trending-medal-svg mb-3">
+                            {% if loop.index == 1 %}
+                            <svg width="50" height="65" viewBox="0 0 50 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Ribbon -->
+                                <path d="M15 28 L15 55 L25 45 L35 55 L35 28" fill="#FDB931" stroke="#F4A300" stroke-width="1.5"/>
+                                <!-- Medal Circle -->
+                                <circle cx="25" cy="18" r="17" fill="#FFD700" stroke="#F4A300" stroke-width="2"/>
+                                <circle cx="25" cy="18" r="13" fill="#FFF" stroke="#F4A300" stroke-width="1.5"/>
+                                <!-- Number -->
+                                <text x="25" y="24" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#FFD700" text-anchor="middle">1</text>
+                            </svg>
+                            {% elif loop.index == 2 %}
+                            <svg width="50" height="65" viewBox="0 0 50 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Ribbon -->
+                                <path d="M15 28 L15 55 L25 45 L35 55 L35 28" fill="#C0C0C0" stroke="#A8A8A8" stroke-width="1.5"/>
+                                <!-- Medal Circle -->
+                                <circle cx="25" cy="18" r="17" fill="#D3D3D3" stroke="#A8A8A8" stroke-width="2"/>
+                                <circle cx="25" cy="18" r="13" fill="#FFF" stroke="#A8A8A8" stroke-width="1.5"/>
+                                <!-- Number -->
+                                <text x="25" y="24" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#C0C0C0" text-anchor="middle">2</text>
+                            </svg>
+                            {% else %}
+                            <svg width="50" height="65" viewBox="0 0 50 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Ribbon -->
+                                <path d="M15 28 L15 55 L25 45 L35 55 L35 28" fill="#CD7F32" stroke="#B87333" stroke-width="1.5"/>
+                                <!-- Medal Circle -->
+                                <circle cx="25" cy="18" r="17" fill="#D2691E" stroke="#B87333" stroke-width="2"/>
+                                <circle cx="25" cy="18" r="13" fill="#FFF" stroke="#B87333" stroke-width="1.5"/>
+                                <!-- Number -->
+                                <text x="25" y="24" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#CD7F32" text-anchor="middle">3</text>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <h5 class="mb-2 fw-bold">
+                            <a href="{{ item.dataset.get_uvlhub_doi() }}" class="text-decoration-none text-dark">
+                                {{ item.title }}
+                            </a>
+                        </h5>
+                        <p class="text-muted small mb-3">by {{ item.main_author }}</p>
+                        <div class="trending-downloads-badge-simple">
+                            {{ item.downloads }} downloads
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
 
+<h1 class="h2 mb-3">
         <b>Latest</b> datasets
     </h1>
 
