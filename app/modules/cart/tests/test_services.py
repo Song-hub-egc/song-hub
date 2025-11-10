@@ -4,7 +4,7 @@ from flask import session
 from app import create_app, db
 from app.modules.cart.models import Cart, CartItem
 from app.modules.cart.services import CartService
-from app.modules.user.models import User
+from app.modules.auth.models import User
 from app.modules.dataset.models import DataSet, DSMetaData
 from app.modules.featuremodel.models import FeatureModel
 
@@ -12,9 +12,9 @@ class TestCartService:
     """Test cases for CartService."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, app, client):
-        self.app = app
-        self.client = client
+    def setup(self, test_app, test_client):
+        self.app = test_app
+        self.client = test_client
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
@@ -67,9 +67,9 @@ class TestCartService:
         db.drop_all()
         self.app_context.pop()
     
-    def test_get_or_create_cart_for_user(self, client):
+    def test_get_or_create_cart_for_user(self, test_client):
         """Test getting or creating a cart for an authenticated user."""
-        with client:
+        with test_client:
             # Simulate authenticated user
             with patch('flask_login.utils._get_user', return_value=self.user):
                 cart = self.service.get_or_create_cart()
@@ -82,9 +82,9 @@ class TestCartService:
                 same_cart = self.service.get_or_create_cart()
                 assert cart.id == same_cart.id
     
-    def test_get_or_create_cart_for_session(self, client):
+    def test_get_or_create_cart_for_session(self, test_client):
         """Test getting or creating a cart for an anonymous user."""
-        with client:
+        with test_client:
             # Simulate anonymous user
             with patch('flask_login.utils._get_user', return_value=MagicMock(is_authenticated=False)):
                 cart = self.service.get_or_create_cart()
@@ -98,9 +98,9 @@ class TestCartService:
                 same_cart = self.service.get_or_create_cart()
                 assert cart.id == same_cart.id
     
-    def test_add_to_cart(self, client):
+    def test_add_to_cart(self, test_client):
         """Test adding an item to the cart."""
-        with client:
+        with test_client:
             with patch('flask_login.utils._get_user', return_value=self.user):
                 # Add first item
                 result = self.service.add_to_cart(self.feature_model.id)
@@ -118,9 +118,9 @@ class TestCartService:
                 assert result['success'] is True
                 assert result['cart_count'] == 2
     
-    def test_remove_from_cart(self, client):
+    def test_remove_from_cart(self, test_client):
         """Test removing an item from the cart."""
-        with client:
+        with test_client:
             with patch('flask_login.utils._get_user', return_value=self.user):
                 # Add items to cart
                 self.service.add_to_cart(self.feature_model.id)
@@ -139,9 +139,9 @@ class TestCartService:
                 result = self.service.remove_from_cart(999)
                 assert result['success'] is False
     
-    def test_clear_cart(self, client):
+    def test_clear_cart(self, test_client):
         """Test clearing all items from the cart."""
-        with client:
+        with test_client:
             with patch('flask_login.utils._get_user', return_value=self.user):
                 # Add items to cart
                 self.service.add_to_cart(self.feature_model.id)
@@ -153,9 +153,9 @@ class TestCartService:
                 assert result['message'] == 'Cart cleared'
                 assert result['cart_count'] == 0
     
-    def test_get_cart_items(self, client):
+    def test_get_cart_items(self, test_client):
         """Test getting all items in the cart."""
-        with client:
+        with test_client:
             with patch('flask_login.utils._get_user', return_value=self.user):
                 # Add items to cart
                 self.service.add_to_cart(self.feature_model.id)
@@ -167,9 +167,9 @@ class TestCartService:
                 assert items[0]['feature_model_id'] == self.feature_model.id
                 assert items[1]['feature_model_id'] == self.feature_model2.id
     
-    def test_merge_session_cart_on_login(self, client):
+    def test_merge_session_cart_on_login(self, test_client):
         """Test merging session cart with user cart on login."""
-        with client:
+        with test_client:
             # First, create a session cart as anonymous user
             with patch('flask_login.utils._get_user', return_value=MagicMock(is_authenticated=False)):
                 session_cart = self.service.get_or_create_cart()

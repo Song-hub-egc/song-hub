@@ -34,6 +34,7 @@ def create_app(config_name="development"):
     
     #Initilize Session
     app.config["SESSION_SQLALCHEMY"] = db
+    app.config["SESSION_SQLALCHEMY_TABLE_ARGS"] = {"extend_existing": True}
     sess.init_app(app)
 
     # Register modules

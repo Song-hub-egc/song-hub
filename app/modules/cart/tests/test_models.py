@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, timezone
 from app import create_app, db
 from app.modules.cart.models import Cart, CartItem
-from app.modules.user.models import User
+from app.modules.auth.models import User
 from app.modules.dataset.models import DataSet, DSMetaData
 from app.modules.featuremodel.models import FeatureModel
 
@@ -10,9 +10,9 @@ class TestCartModels:
     """Test cases for cart models."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, app, client):
-        self.app = app
-        self.client = client
+    def setup(self, test_app, test_client):
+        self.app = test_app
+        self.client = test_client
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()

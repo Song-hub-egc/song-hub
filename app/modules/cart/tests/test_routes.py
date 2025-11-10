@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 from flask import session, url_for
 from app import create_app, db
 from app.modules.cart.models import Cart, CartItem
-from app.modules.user.models import User
+from app.modules.auth.models import User
 from app.modules.dataset.models import DataSet, DSMetaData
 from app.modules.featuremodel.models import FeatureModel
 
@@ -11,9 +11,9 @@ class TestCartRoutes:
     """Test cases for cart routes."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, app, client):
-        self.app = app
-        self.client = client
+    def setup(self, test_app, test_client):
+        self.app = test_app
+        self.client = test_client
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
@@ -85,25 +85,25 @@ class TestCartRoutes:
             password=password
         ), follow_redirects=True)
     
-    def test_view_cart_authenticated(self, client):
+    def test_view_cart_authenticated(self, test_client):
         """Test viewing the cart as an authenticated user."""
-        with client:
-            self.login(client)
+        with test_client:
+            self.login(test_client)
             response = client.get('/cart')
             assert response.status_code == 200
             assert b'Your Cart' in response.data
     
-    def test_view_cart_anonymous(self, client):
+    def test_view_cart_anonymous(self, test_client):
         """Test viewing the cart as an anonymous user."""
-        with client:
+        with test_client:
             response = client.get('/cart')
             assert response.status_code == 200
             assert b'Your Cart' in response.data
     
-    def test_add_to_cart_success(self, client):
+    def test_add_to_cart_success(self, test_client):
         """Test successfully adding an item to the cart."""
-        with client:
-            self.login(client)
+        with test_client:
+            self.login(test_client)
             response = client.post(f'/cart/add/{self.feature_model2.id}', 
                                  headers={'X-Requested-With': 'XMLHttpRequest'})
             
@@ -112,10 +112,10 @@ class TestCartRoutes:
             assert data['success'] is True
             assert data['message'] == 'Added to cart'
     
-    def test_add_to_cart_already_in_cart(self, client):
+    def test_add_to_cart_already_in_cart(self, test_client):
         """Test adding an item that's already in the cart."""
-        with client:
-            self.login(client)
+        with test_client:
+            self.login(test_client)
             # First add
             client.post(f'/cart/add/{self.feature_model.id}', 
                        headers={'X-Requested-With': 'XMLHttpRequest'})
@@ -128,10 +128,10 @@ class TestCartRoutes:
             assert data['success'] is False
             assert 'already in cart' in data['message']
     
-    def test_remove_from_cart_success(self, client):
+    def test_remove_from_cart_success(self, test_client):
         """Test successfully removing an item from the cart."""
-        with client:
-            self.login(client)
+        with test_client:
+            self.login(test_client)
             # First add an item
             client.post(f'/cart/add/{self.feature_model.id}', 
                        headers={'X-Requested-With': 'XMLHttpRequest'})
@@ -151,10 +151,10 @@ class TestCartRoutes:
             assert data['success'] is True
             assert data['message'] == 'Removed from cart'
     
-    def test_remove_from_cart_not_found(self, client):
+    def test_remove_from_cart_not_found(self, test_client):
         """Test removing a non-existent cart item."""
-        with client:
-            self.login(client)
+        with test_client:
+            self.login(test_client)
             response = client.delete('/cart/remove/999',
                                    headers={'X-Requested-With': 'XMLHttpRequest'})
             
@@ -162,10 +162,10 @@ class TestCartRoutes:
             data = response.get_json()
             assert data['success'] is False
     
-    def test_clear_cart(self, client):
+    def test_clear_cart(self, test_client):
         """Test clearing the cart."""
-        with client:
-            self.login(client)
+        with test_client:
+            self.login(test_client)
             # Add some items
             client.post(f'/cart/add/{self.feature_model.id}', 
                        headers={'X-Requested-With': 'XMLHttpRequest'})
@@ -182,10 +182,10 @@ class TestCartRoutes:
             assert data['message'] == 'Cart cleared'
             assert data['cart_count'] == 0
     
-    def test_get_cart_count(self, client):
+    def test_get_cart_count(self, test_client):
         """Test getting the cart item count."""
-        with client:
-            self.login(client)
+        with test_client:
+            self.login(test_client)
             # Add an item
             client.post(f'/cart/add/{self.feature_model.id}', 
                        headers={'X-Requested-With': 'XMLHttpRequest'})
@@ -200,10 +200,10 @@ class TestCartRoutes:
             assert data['count'] > 0
     
     @patch('app.modules.cart.routes.CartService.generate_cart_download')
-    def test_download_cart(self, mock_generate, client):
+    def test_download_cart(self, mock_generate, test_client):
         """Test downloading the cart contents."""
-        with client:
-            self.login(client)
+        with test_client:
+            self.login(test_client)
             # Mock the generate_cart_download method to return a test file
             test_zip_path = '/tmp/test_cart_download.zip'
             with open(test_zip_path, 'w') as f:
@@ -221,10 +221,10 @@ class TestCartRoutes:
             assert response.mimetype == 'application/zip'
             assert 'attachment' in response.headers['Content-Disposition']
     
-    def test_download_empty_cart(self, client):
+    def test_download_empty_cart(self, test_client):
         """Test downloading an empty cart."""
-        with client:
-            self.login(client)
+        with test_client:
+            self.login(test_client)
             # Clear the cart first
             client.post('/cart/clear',
                        headers={'X-Requested-With': 'XMLHttpRequest'})
