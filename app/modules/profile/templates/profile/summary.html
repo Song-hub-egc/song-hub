@@ -57,6 +57,18 @@
                     </p>
                     {% endif %}
                 </div>
+
+                <hr>
+
+                <div class="mb-3">
+                    <h6><i class="fa fa-laptop"></i> Active Sessions</h6>
+                    <p class="text-muted">
+                        <small>Manage your active sessions and see where you're logged in.</small>
+                    </p>
+                    <a href="{{ url_for('auth.view_sessions') }}" class="btn btn-sm btn-primary">
+                        <i class="fa fa-list"></i> View Active Sessions
+                    </a>
+                </div>
             </div>
         </div>
 

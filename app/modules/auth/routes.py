@@ -1,14 +1,15 @@
-from flask import redirect, render_template, request, session, url_for
+from flask import jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.modules.auth import auth_bp
 from app.modules.auth.forms import LoginForm, SignupForm, TwoFactorSetupForm, TwoFactorVerifyForm
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.services import AuthenticationService
-from app.modules.profile.services import UserProfileService
+from app.modules.auth.services import AuthenticationService, SessionService
 
 authentication_service = AuthenticationService()
 user_profile_service = UserProfileService()
+session_service = SessionService()
 
 
 @auth_bp.route("/signup/", methods=["GET", "POST"])
@@ -60,6 +61,13 @@ def login():
 
 @auth_bp.route("/logout")
 def logout():
+    if current_user.is_authenticated:
+        session_id = session.get('_id')
+        if session_id:
+            try:
+                session_service.revoke_session(session_id, current_user)
+            except Exception:
+                pass
     logout_user()
     return redirect(url_for("public.index"))
 
@@ -142,3 +150,40 @@ def regenerate_backup_codes():
 
     backup_codes = authentication_service.regenerate_backup_codes(current_user)
     return render_template("profile/two_factor_backup_codes.html", backup_codes=backup_codes)
+
+@auth_bp.route("/sessions", methods=["GET"])
+@login_required
+def view_sessions():
+    sessions = session_service.get_active_sessions(current_user)
+    current_session_id = session.get('_id')
+    current_session_hash = session_service.get_session_hash(current_session_id) if current_session_id else None
+
+    return render_template("auth/sessions.html", sessions=sessions, current_session_hash=current_session_hash)
+
+
+@auth_bp.route("/sessions/<session_hash>/revoke", methods=["POST"])
+@login_required
+def revoke_session(session_hash):
+    current_session_id = session.get('_id')
+    current_hash = session_service.get_session_hash(current_session_id) if current_session_id else None
+
+    if session_hash == current_hash:
+        return jsonify({"success": False, "error": "Cannot revoke current session"}), 400
+
+    success = session_service.revoke_session_by_hash(session_hash, current_user)
+
+    if success:
+        return jsonify({"success": True}), 200
+    return jsonify({"success": False, "error": "Session not found"}), 404
+
+
+@auth_bp.route("/sessions/revoke-all", methods=["POST"])
+@login_required
+def revoke_all_sessions():
+    current_session_id = session.get('_id')
+
+    if not current_session_id:
+        return jsonify({"success": False, "error": "No active session"}), 400
+
+    session_service.revoke_all_except_current(current_user, current_session_id)
+    return jsonify({"success": True}), 200
