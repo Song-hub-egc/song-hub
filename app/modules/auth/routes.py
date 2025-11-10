@@ -6,9 +6,11 @@ from app.modules.auth.forms import LoginForm, SignupForm, TwoFactorSetupForm, Tw
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.services import AuthenticationService
 from app.modules.profile.services import UserProfileService
+from app.modules.cart.services import CartService
 
 authentication_service = AuthenticationService()
 user_profile_service = UserProfileService()
+cart_service = CartService()
 
 
 @auth_bp.route("/signup/", methods=["GET", "POST"])
@@ -29,6 +31,8 @@ def show_signup_form():
 
         # Log user
         login_user(user, remember=True)
+        # Merge session cart into user cart
+        cart_service.merge_session_cart_on_login(user.id)
         return redirect(url_for("public.index"))
 
     return render_template("auth/signup_form.html", form=form)
@@ -51,6 +55,8 @@ def login():
                 return redirect(url_for("auth.verify_two_factor"))
             else:
                 login_user(user, remember=form.remember_me.data)
+                # Merge session cart into user cart
+                cart_service.merge_session_cart_on_login(user.id)
                 return redirect(url_for("public.index"))
 
         return render_template("auth/login_form.html", form=form, error="Invalid credentials")
@@ -88,6 +94,8 @@ def verify_two_factor():
             session.pop('pending_2fa_user_id', None)
             session.pop('remember_me', None)
             login_user(user, remember=remember)
+            # Merge session cart into user cart
+            cart_service.merge_session_cart_on_login(user.id)
             return redirect(url_for("public.index"))
 
         return render_template("auth/two_factor_verify.html", form=form, error="Invalid authentication code")
