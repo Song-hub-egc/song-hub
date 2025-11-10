@@ -4,6 +4,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException
 
 from core.environment.host import get_host_for_selenium_testing
 from core.selenium.common import close_driver, initialize_driver
@@ -132,5 +133,41 @@ def test_upload_dataset():
         close_driver(driver)
 
 
+  
+def test_trending_datasets():
+    driver = initialize_driver()
+
+    try:
+        host = get_host_for_selenium_testing()
+        driver.get(host)
+        driver.set_window_size(1470, 919)
+        driver.find_element(By.CSS_SELECTOR, ".sidebar-item:nth-child(6) .align-middle:nth-child(2)").click()
+        driver.find_element(By.ID, "email").click()
+        driver.find_element(By.ID, "email").send_keys("user1@example.com")
+        driver.find_element(By.CSS_SELECTOR, ".row:nth-child(4) .mb-3").click()
+        driver.find_element(By.ID, "password").click()
+        driver.find_element(By.ID, "password").send_keys("1234")
+        driver.find_element(By.ID, "submit").click()
+
+        try:
+            download = driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple") 
+        except NoSuchElementException:
+            download = None
+
+        if download != None:
+            download = int(download.text.split(" ")[0])
+        else:
+            download = 0
+
+        driver.find_element(By.LINK_TEXT, "Download (1.21 KB)").click()
+        driver.get(host)
+
+        assert driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple").text.split(" ")[0] == str(download + 1)
+  
+    finally:
+        # Close the browser
+        close_driver(driver)
+
 # Call the test function
 test_upload_dataset()
+test_trending_datasets()
