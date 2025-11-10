@@ -1,0 +1,172 @@
+{% extends "base_template.html" %}
+
+{% block title %}Active Sessions{% endblock %}
+
+{% block content %}
+
+<style>
+.device-icon {
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+.browser-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+.session-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+</style>
+
+<h1 class="h3 mb-3">Active Sessions</h1>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header card-dark d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0" style="color: white; font-size: 15px;">Your Active Sessions</h5>
+                {% if sessions|length > 1 %}
+                <button type="button" class="btn btn-sm btn-danger" onclick="revokeAllSessions()">
+                    <i class="fa fa-times"></i> Revoke All Other Sessions
+                </button>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if sessions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Device & Browser</th>
+                                <th>Location</th>
+                                <th>IP Address</th>
+                                <th>Last Activity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                            <tr id="session-{{ session.session_id }}">
+                                <td>
+                                    {% if session.is_current %}
+                                    <span class="badge bg-success mb-2">Current Session</span>
+                                    <br>
+                                    {% endif %}
+                                    <div class="session-info">
+                                        {% if session.device_type == 'Mobile' %}
+                                        <svg class="device-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                                            <line x1="12" y1="18" x2="12.01" y2="18"/>
+                                        </svg>
+                                        {% elif session.device_type == 'Tablet' %}
+                                        <svg class="device-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                            <line x1="12" y1="18" x2="12.01" y2="18"/>
+                                        </svg>
+                                        {% else %}
+                                        <svg class="device-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                            <line x1="8" y1="21" x2="16" y2="21"/>
+                                            <line x1="12" y1="17" x2="12" y2="21"/>
+                                        </svg>
+                                        {% endif %}
+
+                                        <div>
+                                            <div style="display: flex; align-items: center; gap:8px;">
+                                                {% if 'Chrome' in (session.browser or '') and 'Chromium' not in (session.browser or '') %}
+                                                <!-- Simplified Chrome icon (solid shapes, no defs/ids) -->
+                                                <svg class="browser-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <circle cx="12" cy="12" r="10" fill="#1a73e8"/>
+                                                    <circle cx="12" cy="12" r="5" fill="#fff"/>
+                                                </svg>
+                                                {% elif 'Chromium' in (session.browser or '') %}
+                                                <!-- Simplified Chromium icon -->
+                                                <svg class="browser-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <circle cx="12" cy="12" r="10" fill="#2678ec"/>
+                                                    <circle cx="12" cy="12" r="5" fill="#fff"/>
+                                                </svg>
+                                                {% elif 'Firefox' in (session.browser or '') %}
+                                                <!-- Simplified Firefox icon -->
+                                                <svg class="browser-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <circle cx="12" cy="12" r="10" fill="#ff7139"/>
+                                                    <path d="M7 15c2-3 8-3 10-1" stroke="#fff" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                                                </svg>
+                                                {% elif 'Safari' in (session.browser or '') %}
+                                                <!-- Simplified Safari icon -->
+                                                <svg class="browser-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <circle cx="12" cy="12" r="10" fill="#107ddd"/>
+                                                    <path d="M12 6v6l4 2" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                                {% elif 'Edge' in (session.browser or '') or 'Edg' in (session.browser or '') %}
+                                                <!-- Simplified Edge icon -->
+                                                <svg class="browser-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <circle cx="12" cy="12" r="10" fill="#0078d4"/>
+                                                    <path d="M8 16c2-3 8-3 10-1" stroke="#fff" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                                                </svg>
+                                                {% else %}
+                                                <svg class="browser-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <line x1="2" y1="12" x2="22" y2="12"/>
+                                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                                </svg>
+                                                {% endif %}
+                                                <strong>{{ session.browser or 'Unknown Browser' }}</strong>
+                                            </div>
+                                            <small class="text-muted">{{ session.os or 'Unknown OS' }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                        <circle cx="12" cy="10" r="3"/>
+                                    </svg>
+                                    {{ session.location or 'Unknown' }}
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ session.ip_address or 'Unknown' }}</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ session.last_activity.strftime('%Y-%m-%d %H:%M:%S') if session.last_activity else 'Unknown' }}</small>
+                                </td>
+                                <td>
+                                    {% if not session.is_current %}
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="revokeSession('{{ session.session_id }}')">
+                                        <i class="fa fa-times"></i> Revoke
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-info mt-3">
+                    <i class="fa fa-info-circle"></i>
+                    <small>Sessions expire after 7 days of inactivity. Revoking a session will log out that device immediately.</small>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle"></i> No active sessions found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('auth.scripts') }}"></script>
+{% endblock %}

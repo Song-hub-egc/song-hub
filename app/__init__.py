@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask
+from flask_session import Session
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
@@ -17,6 +18,7 @@ load_dotenv()
 # Create the instances
 db = SQLAlchemy()
 migrate = Migrate()
+sess = Session()
 
 
 def create_app(config_name="development"):
@@ -29,6 +31,10 @@ def create_app(config_name="development"):
     # Initialize SQLAlchemy and Migrate with the app
     db.init_app(app)
     migrate.init_app(app, db)
+    
+    #Initilize Session
+    app.config["SESSION_SQLALCHEMY"] = db
+    sess.init_app(app)
 
     # Register modules
     module_manager = ModuleManager(app)
@@ -54,6 +60,9 @@ def create_app(config_name="development"):
     # Initialize error handler manager
     error_handler_manager = ErrorHandlerManager(app)
     error_handler_manager.register_error_handlers()
+    
+    from app.modules.auth.middleware.session_tracker import setup_session_tracking
+    setup_session_tracking(app)
 
     # Injecting environment variables into jinja context
     @app.context_processor

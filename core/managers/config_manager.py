@@ -1,5 +1,6 @@
 import os
 import secrets
+from datetime import timedelta
 
 
 class ConfigManager:
@@ -33,6 +34,13 @@ class Config:
     TIMEZONE = "Europe/Madrid"
     TEMPLATES_AUTO_RELOAD = True
     UPLOAD_FOLDER = "uploads"
+    
+    SESSION_TYPE = "sqlalchemy"
+    SESSION_PERMANENT = False
+    SESSION_USE_SIGNER = True
+    SESSION_KEY_PREFIX = "uvlhub:session:"
+    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
+    SESSION_SQLALCHEMY_TABLE = "flask_sessions"
 
 
 class DevelopmentConfig(Config):
