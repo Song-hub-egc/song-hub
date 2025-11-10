@@ -113,11 +113,16 @@ function send_query() {
                                         </div>
                                         <div class="col-md-8 col-12">
                                             <a href="${dataset.url}" class="btn btn-outline-primary btn-sm" id="search" style="border-radius: 5px;">
-                                                View dataset
+                                                <i data-feather="eye"></i> View dataset
                                             </a>
                                             <a href="/dataset/download/${dataset.id}" class="btn btn-outline-primary btn-sm" id="search" style="border-radius: 5px;">
-                                                Download (${dataset.total_size_in_human_format})
+                                                <i data-feather="download"></i> Download (${dataset.total_size_in_human_format})
                                             </a>
+                                            ${dataset.feature_models && dataset.feature_models.length > 0 ? `
+                                                <button class="btn btn-outline-success btn-sm" onclick="addDatasetModelsToCart(${dataset.id}, ${dataset.feature_models.map(fm => fm.id).join(',')})" style="border-radius: 5px;">
+                                                    <i data-feather="shopping-cart"></i> Add models to cart (${dataset.feature_models.length})
+                                                </button>
+                                            ` : ''}
                                         </div>
 
 
@@ -181,6 +186,50 @@ function clearFilters() {
 
     // Perform a new search with the reset filters
     queryInput.dispatchEvent(new Event('input', {bubbles: true}));
+}
+
+async function addDatasetModelsToCart(datasetId, ...featureModelIds) {
+    let addedCount = 0;
+    let alreadyInCart = 0;
+
+    // Add models sequentially to avoid session conflicts
+    for (const fmId of featureModelIds) {
+        try {
+            const response = await fetch(`/cart/add/${fmId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                addedCount++;
+            } else if (data.message && data.message.includes('already')) {
+                alreadyInCart++;
+            }
+        } catch (error) {
+            console.error(`Error adding model ${fmId} to cart:`, error);
+        }
+    }
+
+    // Update cart count after all models are processed
+    if (typeof updateCartCount === 'function') {
+        updateCartCount();
+    }
+
+    // Show summary message
+    let message = '';
+    if (addedCount > 0) {
+        message += `✓ Added ${addedCount} model${addedCount > 1 ? 's' : ''} to cart! `;
+    }
+    if (alreadyInCart > 0) {
+        message += `${alreadyInCart} already in cart.`;
+    }
+
+    if (typeof showToast === 'function') {
+        showToast(message || 'No models were added', addedCount > 0 ? 'success' : 'warning');
+    } else {
+        alert(message);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -168,8 +168,8 @@ class DataSetService(BaseService):
         return self.dsmetadata_repository.update(id, **kwargs)
 
     def get_uvlhub_doi(self, dataset: DataSet) -> str:
-        domain = os.getenv("DOMAIN", "localhost")
-        return f"http://{domain}/doi/{dataset.ds_meta_data.dataset_doi}"
+        server_name = os.getenv("SERVER_NAME", "localhost:5000")
+        return f"http://{server_name}/doi/{dataset.ds_meta_data.dataset_doi}"
 
 
 class AuthorService(BaseService):

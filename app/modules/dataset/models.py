@@ -125,6 +125,7 @@ class DataSet(db.Model):
             "files_count": self.get_files_count(),
             "total_size_in_bytes": self.get_file_total_size(),
             "total_size_in_human_format": self.get_file_total_size_for_human(),
+            "feature_models": [{"id": fm.id, "title": fm.fm_meta_data.title if fm.fm_meta_data else f"Model {fm.id}"} for fm in self.feature_models],
         }
 
     def __repr__(self):

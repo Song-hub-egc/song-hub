@@ -314,8 +314,12 @@
                                         </li>
                                     </ul>
                                 </div>
-                                
-                                
+
+                                <button onclick="addToCart({{ feature_model.id }})" class="btn btn-outline-success btn-sm" style="border-radius: 5px;">
+                                    <i data-feather="shopping-cart"></i> Add to cart
+                                </button>
+
+
 
                             </div>
                         </div>
@@ -323,13 +327,21 @@
                 {% endfor %}
             {% endfor %}
         </div>
-        
-        
-    
-        <a href="/dataset/download/{{ dataset.id }}" class="btn btn-primary mt-3" style="border-radius: 5px;">
+
+
+
+        <a href="/dataset/download/{{ dataset.id }}" class="btn btn-primary mt-3" style="border-radius: 5px; width: 100%;">
             <i data-feather="download" class="center-button-icon"></i>
             Download all ({{ dataset.get_file_total_size_for_human() }})
         </a>
+
+        {% if dataset.feature_models %}
+        <button onclick="addAllModelsToCart({{ dataset.id }}, [{% for fm in dataset.feature_models %}{{ fm.id }}{% if not loop.last %}, {% endif %}{% endfor %}])"
+                class="btn btn-outline-success mt-2" style="border-radius: 5px; width: 100%;">
+            <i data-feather="shopping-cart" class="center-button-icon"></i>
+            Add all models to cart ({{ dataset.feature_models|length }})
+        </button>
+        {% endif %}
     </div>
     
 </div>
@@ -491,6 +503,53 @@
         }).catch(err => {
             console.error('Failed to copy text: ', err);
         });
+    }
+
+    async function addAllModelsToCart(datasetId, featureModelIds) {
+        let addedCount = 0;
+        let alreadyInCart = 0;
+
+        // Add models sequentially to avoid session conflicts
+        for (const fmId of featureModelIds) {
+            try {
+                const response = await fetch(`/cart/add/${fmId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    addedCount++;
+                } else if (data.message && data.message.includes('already')) {
+                    alreadyInCart++;
+                }
+            } catch (error) {
+                console.error(`Error adding model ${fmId} to cart:`, error);
+            }
+        }
+
+        // Update cart count after all models are processed
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+        }
+
+        // Show summary message
+        let message = '';
+        if (addedCount > 0) {
+            message += `✓ Added ${addedCount} model${addedCount > 1 ? 's' : ''} to cart! `;
+        }
+        if (alreadyInCart > 0) {
+            message += `${alreadyInCart} already in cart.`;
+        }
+
+        if (typeof showToast === 'function') {
+            showToast(message || 'No models were added', addedCount > 0 ? 'success' : 'warning');
+        } else {
+            alert(message);
+        }
+
+        // Re-render feather icons for any newly added elements
+        feather.replace();
     }
 </script>
 
