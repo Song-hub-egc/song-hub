@@ -5,7 +5,7 @@ from app.modules.auth import auth_bp
 from app.modules.auth.forms import LoginForm, SignupForm, TwoFactorSetupForm, TwoFactorVerifyForm
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.services import AuthenticationService
-from app.modules.auth.services import AuthenticationService, SessionService
+from app.modules.auth.services import AuthenticationService, SessionService, UserProfileService
 
 authentication_service = AuthenticationService()
 user_profile_service = UserProfileService()
