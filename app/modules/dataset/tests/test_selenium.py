@@ -4,7 +4,8 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from core.environment.host import get_host_for_selenium_testing
 from core.selenium.common import close_driver, initialize_driver
@@ -97,12 +98,21 @@ def test_upload_dataset():
         dropzone.send_keys(file2_path)
         wait_for_page_to_load(driver)
 
-        # Add authors in UVL models
-        show_button = driver.find_element(By.ID, "0_button")
-        show_button.send_keys(Keys.RETURN)
-        add_author_uvl_button = driver.find_element(By.ID, "0_form_authors_button")
-        add_author_uvl_button.send_keys(Keys.RETURN)
-        wait_for_page_to_load(driver)
+        # Add authors in UVL models - wait for the UI to render the buttons
+        try:
+            show_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.ID, "0_button"))
+            )
+            show_button.click()
+
+            add_author_uvl_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.ID, "0_form_authors_button"))
+            )
+            add_author_uvl_button.click()
+            wait_for_page_to_load(driver)
+        except TimeoutException:
+            # Make the failure clearer in test output
+            raise NoSuchElementException('Could not find UVL model buttons (0_button / 0_form_authors_button)')
 
         name_field = driver.find_element(By.NAME, "feature_models-0-authors-2-name")
         name_field.send_keys("Author3")

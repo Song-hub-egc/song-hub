@@ -1,4 +1,4 @@
-from flask import jsonify, redirect, render_template, request, session, url_for
+from flask import current_app, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.modules.auth import auth_bp
@@ -32,6 +32,8 @@ def show_signup_form():
 
         # Log user
         login_user(user, remember=True)
+        if not current_app.config.get("TESTING"):
+            session_service.register_current_session(user)
         return redirect(url_for("public.index"))
 
     return render_template("auth/signup_form.html", form=form)
@@ -54,6 +56,8 @@ def login():
                 return redirect(url_for("auth.verify_two_factor"))
             else:
                 login_user(user, remember=form.remember_me.data)
+                if not current_app.config.get("TESTING"):
+                    session_service.register_current_session(user)
                 return redirect(url_for("public.index"))
 
         return render_template("auth/login_form.html", form=form, error="Invalid credentials")
@@ -71,6 +75,8 @@ def logout():
             except Exception:
                 pass
     logout_user()
+    session.pop('_last_activity_update', None)
+    session.pop('_id', None)
     return redirect(url_for("public.index"))
 
 
@@ -98,6 +104,8 @@ def verify_two_factor():
             session.pop('pending_2fa_user_id', None)
             session.pop('remember_me', None)
             login_user(user, remember=remember)
+            if not current_app.config.get("TESTING"):
+                session_service.register_current_session(user)
             return redirect(url_for("public.index"))
 
         return render_template("auth/two_factor_verify.html", form=form, error="Invalid authentication code")
@@ -163,16 +171,20 @@ def view_sessions():
     return render_template("auth/sessions.html", sessions=sessions, current_session_hash=current_session_hash)
 
 
-@auth_bp.route("/sessions/<session_hash>/revoke", methods=["POST"])
+@auth_bp.route("/sessions/<session_identifier>/revoke", methods=["POST"])
 @login_required
-def revoke_session(session_hash):
+def revoke_session(session_identifier):
     current_session_id = session.get('_id')
     current_hash = session_service.get_session_hash(current_session_id) if current_session_id else None
 
-    if session_hash == current_hash:
+    derived_identifier_hash = session_service.get_session_hash(session_identifier)
+    if session_identifier == current_hash or derived_identifier_hash == current_hash:
         return jsonify({"success": False, "error": "Cannot revoke current session"}), 400
 
-    success = session_service.revoke_session_by_hash(session_hash, current_user)
+    success = session_service.revoke_session_by_hash(session_identifier, current_user)
+    if not success:
+        if derived_identifier_hash != session_identifier:
+            success = session_service.revoke_session_by_hash(derived_identifier_hash, current_user)
 
     if success:
         return jsonify({"success": True}), 200

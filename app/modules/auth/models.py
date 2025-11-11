@@ -2,7 +2,7 @@ import base64
 import io
 import json
 import secrets
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pyotp
 import qrcode
@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
 
     email = db.Column(db.String(256), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.utcnow())
 
     two_factor_secret = db.Column(db.String(32), nullable=True)
     two_factor_enabled = db.Column(db.Boolean, default=False, nullable=False)
@@ -109,8 +109,8 @@ class UserSession(db.Model):
     browser = db.Column(db.String(100), nullable=True)
     os = db.Column(db.String(100), nullable=True)
     location = db.Column(db.String(200), nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    last_activity = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.utcnow())
+    last_activity = db.Column(db.DateTime, nullable=False, default=lambda: datetime.utcnow())
     is_current = db.Column(db.Boolean, default=False, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=True)
 
@@ -128,10 +128,10 @@ class UserSession(db.Model):
     def is_expired(self):
         if not self.expires_at:
             return False
-        return datetime.now(timezone.utc) > self.expires_at
+        return datetime.utcnow() > self.expires_at
 
     def update_activity(self):
-        self.last_activity = datetime.now(timezone.utc)
+        self.last_activity = datetime.utcnow()
 
     def get_device_icon(self):
         if self.device_type == 'mobile':
@@ -141,8 +141,7 @@ class UserSession(db.Model):
         return 'fa-laptop'
 
     def get_time_since_activity(self):
-        from datetime import datetime, timezone
-        delta = datetime.now(timezone.utc) - self.last_activity
+        delta = datetime.utcnow() - self.last_activity
         if delta.total_seconds() < 60:
             return "Just now"
         elif delta.total_seconds() < 3600:

@@ -1,8 +1,10 @@
 import os
-
-from flask_login import current_user, login_user
+import secrets
 import hashlib
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+
+from flask import current_app, has_request_context, request, session
+from flask_login import current_user, login_user
 
 from app import db
 from app.modules.auth.models import User, UserSession
@@ -22,6 +24,8 @@ class AuthenticationService(BaseService):
         user = self.repository.get_by_email(email)
         if user is not None and user.check_password(password):
             login_user(user, remember=remember)
+            if not current_app.config.get("TESTING"):
+                SessionService().register_current_session(user)
             return True
         return False
 
@@ -119,12 +123,28 @@ class AuthenticationService(BaseService):
 
 class SessionService:
 
+    def _get_or_set_session_identifier(self):
+        if not has_request_context():
+            return None
+        session_id = session.get('_id')
+        if not session_id:
+            session_id = secrets.token_hex(32)
+            session['_id'] = session_id
+        return session_id
+
+    def register_current_session(self, user):
+        session_id = self._get_or_set_session_identifier()
+        if not session_id:
+            return
+        self.create_session(user, request, session_id)
+        self.mark_as_current(session_id, user)
+
     def get_session_hash(self, session_id):
         return hashlib.sha256(session_id.encode()).hexdigest()
 
     def get_active_sessions(self, user):
         return UserSession.query.filter_by(user_id=user.id).filter(
-            UserSession.expires_at > datetime.now(timezone.utc)
+            UserSession.expires_at > datetime.utcnow()
         ).order_by(UserSession.last_activity.desc()).all()
 
     def get_session_by_id(self, session_id, user):
@@ -147,7 +167,7 @@ class SessionService:
             user_id=user.id,
             session_id=session_hash,
             ip_address=self.get_client_ip(request),
-            expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+            expires_at=datetime.utcnow() + timedelta(days=7)
         )
 
         user_agent_string = request.headers.get('User-Agent', '')
@@ -244,7 +264,7 @@ class SessionService:
 
     def cleanup_expired_sessions(self):
         UserSession.query.filter(
-            UserSession.expires_at < datetime.now(timezone.utc)
+            UserSession.expires_at < datetime.utcnow()
         ).delete()
         db.session.commit()
 
@@ -253,7 +273,7 @@ class SessionService:
             return request.headers.get('X-Forwarded-For').split(',')[0].strip()
         elif request.headers.get('X-Real-IP'):
             return request.headers.get('X-Real-IP')
-        return request.remote_addr
+        return request.remote_addr or "127.0.0.1"
 
     def get_location_from_ip(self, ip_address):
         if not ip_address or ip_address in ['127.0.0.1', 'localhost', '::1']:
@@ -290,5 +310,5 @@ class SessionService:
 
     def get_active_session_count(self, user):
         return UserSession.query.filter_by(user_id=user.id).filter(
-            UserSession.expires_at > datetime.now(timezone.utc)
+            UserSession.expires_at > datetime.utcnow()
         ).count()

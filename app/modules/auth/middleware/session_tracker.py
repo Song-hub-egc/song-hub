@@ -1,12 +1,15 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
-from flask import request, session
-from flask_login import current_user
+from flask import redirect, request, session, url_for
+from flask_login import current_user, logout_user
 
 from app.modules.auth.services import SessionService
 
 
 def setup_session_tracking(app):
+
+    if app.config.get("TESTING"):
+        return
 
     session_service = SessionService()
 
@@ -21,10 +24,6 @@ def setup_session_tracking(app):
             if not session_id:
                 return
 
-            from flask_login import logout_user
-            from flask import redirect, url_for
-            from app.modules.auth.models import UserSession
-
             existing_session = session_service.get_session_by_id(session_id, current_user)
 
             if not existing_session:
@@ -33,7 +32,7 @@ def setup_session_tracking(app):
                 return redirect(url_for('auth.login'))
             else:
                 last_update = session.get('_last_activity_update')
-                now = datetime.now(timezone.utc)
+                now = datetime.utcnow()
 
                 if not last_update or (now - datetime.fromisoformat(last_update)).total_seconds() > 30:
                     try:

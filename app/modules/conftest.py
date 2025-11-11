@@ -19,39 +19,45 @@ def test_app():
 
 @pytest.fixture(scope="module")
 def test_client(test_app):
+    testing_client = test_app.test_client()
+    ctx = test_app.app_context()
+    ctx.push()
+    req_ctx = test_app.test_request_context()
+    req_ctx.push()
+    print("TESTING SUITE (2): Blueprints registrados:", test_app.blueprints)
 
-    with test_app.test_client() as testing_client:
-        with test_app.app_context():
-            print("TESTING SUITE (2): Blueprints registrados:", test_app.blueprints)
+    db.drop_all()
+    db.create_all()
+    """
+    The test suite always includes the following user in order to avoid repetition
+    of its creation
+    """
+    user_test = User(email="test@example.com", password="test1234")
+    db.session.add(user_test)
+    db.session.commit()
 
-            db.drop_all()
-            db.create_all()
-            """
-            The test suite always includes the following user in order to avoid repetition
-            of its creation
-            """
-            user_test = User(email="test@example.com", password="test1234")
-            db.session.add(user_test)
-            db.session.commit()
-
-            print("Rutas registradas:")
-            for rule in test_app.url_map.iter_rules():
-                print(rule)
-            yield testing_client
-
-            db.session.remove()
-            db.drop_all()
+    print("Rutas registradas:")
+    for rule in test_app.url_map.iter_rules():
+        print(rule)
+    try:
+        yield testing_client
+    finally:
+        db.session.remove()
+        db.drop_all()
+        req_ctx.pop()
+        ctx.pop()
 
 
 @pytest.fixture(scope="function")
-def clean_database():
-    db.session.remove()
-    db.drop_all()
-    db.create_all()
-    yield
-    db.session.remove()
-    db.drop_all()
-    db.create_all()
+def clean_database(test_app):
+    with test_app.app_context():
+        db.session.remove()
+        db.drop_all()
+        db.create_all()
+        yield
+        db.session.remove()
+        db.drop_all()
+        db.create_all()
 
 @pytest.fixture(scope="function")
 def test_database_poblated(test_app):

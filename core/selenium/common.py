@@ -1,10 +1,13 @@
 import os
+import logging
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
+
+logger = logging.getLogger(__name__)
 
 
 def get_service_driver():
@@ -57,14 +60,36 @@ def initialize_driver():
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-        service = ChromeService(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=options)
+        # Allow using a preinstalled chromedriver via env var to avoid online download
+        chromedriver_path = os.environ.get("CHROMEDRIVER_PATH")
+        if chromedriver_path:
+            service = ChromeService(chromedriver_path)
+            driver = webdriver.Chrome(service=service, options=options)
+        else:
+            try:
+                service = ChromeService(ChromeDriverManager().install())
+                driver = webdriver.Chrome(service=service, options=options)
+            except Exception as e:
+                logger.warning("webdriver_manager failed for Chrome: %s; trying local chromedriver from PATH", e)
+                # fallback to system chromedriver in PATH
+                driver = webdriver.Chrome(options=options)
 
     elif driver_name == "firefox":
         options = webdriver.FirefoxOptions()
         options.add_argument("--headless")
-        service = FirefoxService(GeckoDriverManager().install())
-        driver = webdriver.Firefox(service=service, options=options)
+        # Allow using a preinstalled geckodriver via env var to avoid online download
+        geckodriver_path = os.environ.get("GECKODRIVER_PATH")
+        if geckodriver_path:
+            service = FirefoxService(geckodriver_path)
+            driver = webdriver.Firefox(service=service, options=options)
+        else:
+            try:
+                service = FirefoxService(GeckoDriverManager().install())
+                driver = webdriver.Firefox(service=service, options=options)
+            except Exception as e:
+                logger.warning("webdriver_manager failed for Firefox: %s; trying local geckodriver from PATH", e)
+                # fallback to system geckodriver in PATH
+                driver = webdriver.Firefox(options=options)
 
     else:
         raise Exception(f"Driver '{driver_name}' not supported.")
