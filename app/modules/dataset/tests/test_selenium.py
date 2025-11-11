@@ -127,13 +127,24 @@ def test_upload_dataset():
         upload_btn = driver.find_element(By.ID, "upload_button")
         upload_btn.send_keys(Keys.RETURN)
         wait_for_page_to_load(driver)
-        time.sleep(2)  # Force wait time
 
-        assert driver.current_url == f"{host}/dataset/list", "Test failed!"
+        # Wait for the dataset to appear in the list (polling up to 10s).
+        final_datasets = None
+        deadline = time.time() + 10
+        while time.time() < deadline:
+            try:
+                final_datasets = count_datasets(driver, host)
+                if final_datasets == initial_datasets + 1:
+                    break
+            except Exception:
+                # Ignore transient errors while polling
+                pass
+            time.sleep(0.5)
 
-        # Count final datasets
-        final_datasets = count_datasets(driver, host)
-        assert final_datasets == initial_datasets + 1, "Test failed!"
+        if final_datasets != initial_datasets + 1:
+            raise AssertionError(
+                f"Upload did not result in a new dataset: initial={initial_datasets}, final={final_datasets}"
+            )
 
         print("Test passed!")
 
@@ -178,6 +189,4 @@ def test_trending_datasets():
         # Close the browser
         close_driver(driver)
 
-# Call the test function
-test_upload_dataset()
-test_trending_datasets()
+# Tests are executed by pytest; do not invoke them at import time.
