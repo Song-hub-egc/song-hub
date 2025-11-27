@@ -1,0 +1,58 @@
+# Gestión de Ramas y Flujo de Trabajo en el Equipo
+
+En nuestro proyecto, utilizamos una estrategia de gestión de ramas basada en **Feature tasks**, **Bugfixes**, y **Trunk** (EGC FLOW), todo bajo un flujo claro para garantizar la consistencia en el desarrollo y facilitar la integración continua. A continuación, te explicamos cómo  gestionamos el trabajo y las ramas.
+
+## Estructura de Ramas
+
+### 1. **Main (main)**
+La rama `main` es **la única rama donde se encuentran las versiones finales** o **releases**. Solo se hacen **merge** en esta rama cuando se ha completado una nueva versión o release.
+
+**Reglas:**
+- Solo se realiza un **merge** desde la rama **trunk** después de pasar pruebas.
+- Solo se debe hacer un `merge` en `main` después de las pruebas finales, lo que garantiza que las versiones lanzadas sean estables.
+- Hacer varios merge a main a la semana.
+
+### 2. **Trunk**
+La rama `trunk` se considera **el punto central para la integración continua**. Es donde se realiza el **merge** de las actualizaciones constantes del equipo. Todos los desarrolladores deben integrar sus cambios con regularidad para mantener el código actualizado.
+
+**Reglas:**
+- **Merge constante** desde las ramas `feature` para garantizar que el trabajo de cada miembro del equipo se mantenga actualizado.
+- Cualquier cambio en `trunk` debe ser probado y validado, ya que esto afectará a todas las ramas que se basan en él.
+- Si hay conflictos, deben resolverse de inmediato para evitar que el código quede inconsistente.
+
+### 3. **Feature Tasks (feature task A y B)**
+Las ramas **feature** se utilizan para desarrollar nuevas funcionalidades o tareas dentro del proyecto. Cada nueva tarea o funcionalidad se debe implementar en una nueva rama **feature** para mantener el trabajo aislado.
+
+**Reglas:**
+- Nombres de ramas: Deben seguir el formato `feature/nombre_tarea`.
+- **Merge** a `trunk` una vez la funcionalidad esté completada y probada.
+- Es importante hacer `pull` y `merge` frecuentemente desde `trunk` para evitar grandes conflictos de integración.
+- Por último, deben borrarse estas ramas cuando se consideren inservibles.
+
+### 4. **Bugfix**
+Las ramas **bugfix** se utilizan para corregir errores o problemas en el código.
+
+**Reglas:**
+- Cualquier corrección de errores o bugs debe realizarse en una rama **bugfix**.
+- Estas ramas también deben fusionarse regularmente en `trunk` para mantener el código corregido actualizado en la rama principal.
+
+## Flujo de Trabajo
+
+1. **Inicio del desarrollo de una tarea**:
+   - Crear una rama desde `trunk` para la nueva funcionalidad o corrección (`feature/nueva_funcionalidad` o `bugfix/correccion`).
+   - Trabajar en la tarea y hacer `push` regularmente para mantener el código actualizado y respaldado.
+
+2. **Integración continua**:
+   - Realiza **merge** frecuente de `trunk` en tu rama de trabajo para mantenerla actualizada.
+   - Si hay conflictos, resolverlos antes de continuar.
+   
+3. **Revisión y pruebas**:
+   - Una vez que la tarea esté completa, hacer un **merge** de tu rama en `trunk`.
+   - Ejecutar pruebas para verificar que todo funcione correctamente.
+
+4. **Fusión en main**:
+   - Una vez que la funcionalidad esté aprobada, hacer el **merge** de `trunk` en `main`.
+
+5. **Manejo de errores**:
+   - Si se detectan errores en `main`, crear una rama **bugfix** para corregirlos.
+   - Después de la corrección, **merge** la rama **bugfix** de nuevo a `trunk` y luego a `main` si es necesario.
