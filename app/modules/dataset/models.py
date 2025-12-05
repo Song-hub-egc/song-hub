@@ -177,3 +177,8 @@ class DatasetComment(db.Model):
     is_deleted = db.Column(db.Boolean, nullable=False, default=False)
     deleted_at = db.Column(db.DateTime, nullable=True)
     deleted_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
+    # Relationships
+    dataset = db.relationship('DataSet', backref=db.backref('comments', lazy=True, cascade='all, delete-orphan'))
+    author = db.relationship('User', foreign_keys=[user_id], backref='comments')
+    deleter = db.relationship('User', foreign_keys=[deleted_by])
