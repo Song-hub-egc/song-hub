@@ -182,3 +182,25 @@ class DatasetComment(db.Model):
     dataset = db.relationship('DataSet', backref=db.backref('comments', lazy=True, cascade='all, delete-orphan'))
     author = db.relationship('User', foreign_keys=[user_id], backref='comments')
     deleter = db.relationship('User', foreign_keys=[deleted_by])
+
+    # Methods
+    def to_dict(self, include_replies=True):
+        result = {
+            'id': self.id,
+            'dataset_id': self.dataset_id,
+            'user_id': self.user_id,
+            'content': self.content if not self.is_deleted else '[Comment deleted]',
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'is_deleted': self.is_deleted,
+            'author': {
+                'id': self.author.id,
+                'name': f"{self.author.profile.name} {self.author.profile.surname}" if hasattr(self.author, 'profile') else 'Unknown',
+                'email': self.author.email
+            } if self.author and not self.is_deleted else None
+        }
+
+        return result
+
+    def __repr__(self):
+        return f"<DatasetComment id={self.id} dataset_id={self.dataset_id} user_id={self.user_id}>"
