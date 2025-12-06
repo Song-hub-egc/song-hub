@@ -91,7 +91,7 @@ class DataSetService(BaseService):
 
     def total_dataset_views(self) -> int:
         return self.dsviewrecord_repostory.total_dataset_views()
-    
+
     def get_trending_datasets(self, period='week', limit=10):
         period_days = 7 if period == 'week' else 30 if period == 'month' else 7
 

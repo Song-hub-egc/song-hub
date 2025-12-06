@@ -98,7 +98,7 @@ class DataSetRepository(BaseRepository):
             .limit(5)
             .all()
         )
-    
+
     def get_trending_datasets(self, period_days: int = 7, limit: int = 10):
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=period_days)
 

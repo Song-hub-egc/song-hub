@@ -279,7 +279,7 @@ def get_unsynchronized_dataset(dataset_id):
 def get_dataset_stats(dataset_id):
     """Get dataset statistics including downloads, views, etc."""
     from app.modules.dataset.models import DSViewRecord, DSDownloadRecord
-    
+
     dataset = dataset_service.get_or_404(dataset_id)
 
     # Get total views count
