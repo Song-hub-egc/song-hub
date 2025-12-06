@@ -10,11 +10,10 @@ Tests cover:
 """
 
 import pytest
-from datetime import datetime, timezone
 
 from app import db
 from app.modules.auth.models import User
-from app.modules.dataset.models import DataSet, DSDownloadRecord
+from app.modules.dataset.models import DataSet
 from app.modules.dataset.services import DataSetService
 
 
@@ -87,7 +86,6 @@ def test_download_count_does_not_increment_on_repeated_download(test_database_po
 
 def test_download_count_default_value_is_zero(test_database_poblated):
     """Test that new datasets have download_count initialized to 0."""
-    client = test_database_poblated
     dataset, user = _get_first_dataset_and_user()
     if not dataset:
         pytest.skip("No dataset seeded")
@@ -191,7 +189,6 @@ def test_stats_endpoint_includes_all_metrics(test_database_poblated):
 
 def test_increment_download_count_service_method(test_database_poblated):
     """Test the increment_download_count service method directly."""
-    client = test_database_poblated
     dataset, user = _get_first_dataset_and_user()
     if not dataset:
         pytest.skip("No dataset seeded")
@@ -209,7 +206,6 @@ def test_increment_download_count_service_method(test_database_poblated):
 
 def test_download_count_persists_across_sessions(test_database_poblated):
     """Test that download_count persists correctly in the database."""
-    client = test_database_poblated
     dataset, user = _get_first_dataset_and_user()
     if not dataset:
         pytest.skip("No dataset seeded")
