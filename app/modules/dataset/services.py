@@ -171,6 +171,10 @@ class DataSetService(BaseService):
         domain = os.getenv("DOMAIN", "localhost")
         return f"http://{domain}/doi/{dataset.ds_meta_data.dataset_doi}"
 
+    def increment_download_count(self, dataset_id: int):
+        """Increment the download count for a dataset"""
+        return self.repository.increment_download_count(dataset_id)
+
 
 class AuthorService(BaseService):
     def __init__(self):
