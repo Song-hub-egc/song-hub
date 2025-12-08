@@ -91,7 +91,7 @@ class DataSetService(BaseService):
 
     def total_dataset_views(self) -> int:
         return self.dsviewrecord_repostory.total_dataset_views()
-    
+
     def get_trending_datasets(self, period='week', limit=10):
         period_days = 7 if period == 'week' else 30 if period == 'month' else 7
 
@@ -170,6 +170,10 @@ class DataSetService(BaseService):
     def get_uvlhub_doi(self, dataset: DataSet) -> str:
         domain = os.getenv("DOMAIN", "localhost")
         return f"http://{domain}/doi/{dataset.ds_meta_data.dataset_doi}"
+
+    def increment_download_count(self, dataset_id: int):
+        """Increment the download count for a dataset"""
+        return self.repository.increment_download_count(dataset_id)
 
 
 class AuthorService(BaseService):

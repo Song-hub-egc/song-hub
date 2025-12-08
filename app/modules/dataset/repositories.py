@@ -98,7 +98,7 @@ class DataSetRepository(BaseRepository):
             .limit(5)
             .all()
         )
-    
+
     def get_trending_datasets(self, period_days: int = 7, limit: int = 10):
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=period_days)
 
@@ -145,6 +145,14 @@ class DataSetRepository(BaseRepository):
         )
 
         return result
+
+    def increment_download_count(self, dataset_id: int):
+        """Increment the download count for a dataset"""
+        dataset = self.model.query.filter_by(id=dataset_id).first()
+        if dataset:
+            dataset.download_count += 1
+            self.session.commit()
+        return dataset
 
 
 class DOIMappingRepository(BaseRepository):
