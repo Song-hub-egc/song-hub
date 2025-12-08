@@ -450,11 +450,11 @@
 
 
 <script>
-    // Coments variables
+    // Comments variables
     const datasetId = "{{ dataset.id }}";
     const datasetOwnerId = "{{ dataset.user_id }}";
     const currentUserId = "{{ current_user.id if current_user.is_authenticated else 'null' }}";
-    
+
     document.addEventListener('DOMContentLoaded', function () {
         feather.replace();
         loadComments();
