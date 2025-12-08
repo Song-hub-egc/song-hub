@@ -58,9 +58,11 @@ class DataSetService(BaseService):
 
         os.makedirs(dest_dir, exist_ok=True)
 
-        for feature_model in dataset.feature_models:
-            uvl_filename = feature_model.fm_meta_data.uvl_filename
-            shutil.move(os.path.join(source_dir, uvl_filename), dest_dir)
+        if hasattr(dataset, "feature_models"):
+            for feature_model in dataset.feature_models:
+                uvl_filename = feature_model.fm_meta_data.uvl_filename
+                shutil.move(os.path.join(source_dir, uvl_filename), dest_dir)
+
 
     def get_synchronized(self, current_user_id: int) -> DataSet:
         return self.repository.get_synchronized(current_user_id)
@@ -136,33 +138,105 @@ class DataSetService(BaseService):
                 author = self.author_repository.create(commit=False, ds_meta_data_id=dsmetadata.id, **author_data)
                 dsmetadata.authors.append(author)
 
-            dataset = self.create(commit=False, user_id=current_user.id, ds_meta_data_id=dsmetadata.id)
+            dataset_class = DataSet
+            if hasattr(form, "feature_models"):
+                from app.modules.featuremodel.models import UVLDataset
+                dataset_class = UVLDataset
+            elif hasattr(form, "images"):
+                from app.modules.imagedataset.models import ImageDataset
+                dataset_class = ImageDataset
 
-            for feature_model in form.feature_models:
-                uvl_filename = feature_model.uvl_filename.data
-                fmmetadata = self.fmmetadata_repository.create(commit=False, **feature_model.get_fmmetadata())
-                for author_data in feature_model.get_authors():
-                    author = self.author_repository.create(commit=False, fm_meta_data_id=fmmetadata.id, **author_data)
-                    fmmetadata.authors.append(author)
+            dataset = dataset_class(user_id=current_user.id, ds_meta_data_id=dsmetadata.id)
+            self.repository.session.add(dataset)
 
-                fm = self.feature_model_repository.create(
-                    commit=False, data_set_id=dataset.id, fm_meta_data_id=fmmetadata.id
-                )
+            if hasattr(form, "feature_models"):
+                for feature_model in form.feature_models:
+                    uvl_filename = feature_model.uvl_filename.data
+                    fmmetadata = self.fmmetadata_repository.create(commit=False, **feature_model.get_fmmetadata())
+                    for author_data in feature_model.get_authors():
+                        author = self.author_repository.create(commit=False, fm_meta_data_id=fmmetadata.id, **author_data)
+                        fmmetadata.authors.append(author)
 
-                # associated files in feature model
-                file_path = os.path.join(current_user.temp_folder(), uvl_filename)
-                checksum, size = calculate_checksum_and_size(file_path)
+                    fm = self.feature_model_repository.create(
+                        commit=False, data_set_id=dataset.id, fm_meta_data_id=fmmetadata.id
+                    )
 
-                file = self.hubfilerepository.create(
-                    commit=False, name=uvl_filename, checksum=checksum, size=size, feature_model_id=fm.id
-                )
-                fm.files.append(file)
+                    # associated files in feature model
+                    file_path = os.path.join(current_user.temp_folder(), uvl_filename)
+                    checksum, size = calculate_checksum_and_size(file_path)
+
+                    file = self.hubfilerepository.create(
+                        commit=False, name=uvl_filename, checksum=checksum, size=size, feature_model_id=fm.id
+                    )
+                    fm.files.append(file)
+            
+            elif hasattr(form, "images"):
+                from app.modules.imagedataset.models import Image, ImageMetaData
+                from app.modules.dataset.models import PublicationType
+                
+                for image_form in form.images:
+                    filename = image_form.filename.data
+                    # Create generic metadata for image (reusing what we can or creating new)
+                    image_metadata = ImageMetaData(
+                        filename=filename,
+                        title=image_form.title.data,
+                        description=image_form.desc.data,
+                        publication_type=PublicationType.NONE, # Defaulting for now
+                        tags="",
+                        publication_doi=""
+                    )
+                    
+                    # Add main author to image metadata as well for now
+                    author = self.author_repository.create(commit=False, image_meta_data_id=None, **main_author)
+                    image_metadata.authors.append(author)
+                    
+                    self.repository.session.add(image_metadata)
+                    self.repository.session.flush() # to get ID
+                    
+                    # Fix author FK
+                    author.image_meta_data_id = image_metadata.id
+
+                    image = Image(data_set_id=dataset.id, image_meta_data_id=image_metadata.id)
+                    self.repository.session.add(image)
+                    self.repository.session.flush()
+
+                    # associated files
+                    file_path = os.path.join(current_user.temp_folder(), filename)
+                    if os.path.exists(file_path):
+                        checksum, size = calculate_checksum_and_size(file_path)
+
+                        # Hubfile creation - note we need to pass image_id
+                        # HubfileRepository might need update to accept image_id or we create manually
+                        file = self.hubfilerepository.create(
+                            commit=False, name=filename, checksum=checksum, size=size, image_id=image.id, feature_model_id=None
+                        )
+                        image.files.append(file)
+                    else:
+                        logger.warning(f"File {filename} not found in temp folder")
+                        
             self.repository.session.commit()
+
         except Exception as exc:
             logger.info(f"Exception creating dataset from form...: {exc}")
             self.repository.session.rollback()
             raise exc
         return dataset
+
+    def move_images(self, dataset: DataSet):
+        current_user = AuthenticationService().get_authenticated_user()
+        source_dir = current_user.temp_folder()
+
+        working_dir = os.getenv("WORKING_DIR", "")
+        dest_dir = os.path.join(working_dir, "uploads", f"user_{current_user.id}", f"dataset_{dataset.id}")
+
+        os.makedirs(dest_dir, exist_ok=True)
+
+        if hasattr(dataset, "images"):
+            for image in dataset.images:
+                filename = image.image_meta_data.filename
+                source_path = os.path.join(source_dir, filename)
+                if os.path.exists(source_path):
+                    shutil.move(source_path, dest_dir)
 
     def update_dsmetadata(self, id, **kwargs):
         return self.dsmetadata_repository.update(id, **kwargs)

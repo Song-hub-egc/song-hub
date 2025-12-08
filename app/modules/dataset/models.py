@@ -36,6 +36,8 @@ class Author(db.Model):
     orcid = db.Column(db.String(120))
     ds_meta_data_id = db.Column(db.Integer, db.ForeignKey("ds_meta_data.id"))
     fm_meta_data_id = db.Column(db.Integer, db.ForeignKey("fm_meta_data.id"))
+    image_meta_data_id = db.Column(db.Integer, db.ForeignKey("image_meta_data.id"))
+
 
     def to_dict(self):
         return {"name": self.name, "affiliation": self.affiliation, "orcid": self.orcid}
@@ -73,13 +75,20 @@ class DataSet(db.Model):
     download_count = db.Column(db.Integer, nullable=False, default=0)
 
     ds_meta_data = db.relationship("DSMetaData", backref=db.backref("data_set", uselist=False))
-    feature_models = db.relationship("FeatureModel", backref="data_set", lazy=True, cascade="all, delete")
+    
+    dataset_type = db.Column(db.String(50))
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'dataset',
+        'polymorphic_on': dataset_type
+    }
 
     def name(self):
         return self.ds_meta_data.title
 
     def files(self):
-        return [file for fm in self.feature_models for file in fm.files]
+        return []
+
 
     def delete(self):
         db.session.delete(self)
@@ -92,10 +101,12 @@ class DataSet(db.Model):
         return f"https://zenodo.org/record/{self.ds_meta_data.deposition_id}" if self.ds_meta_data.dataset_doi else None
 
     def get_files_count(self):
-        return sum(len(fm.files) for fm in self.feature_models)
+        return 0
+
 
     def get_file_total_size(self):
-        return sum(file.size for fm in self.feature_models for file in fm.files)
+        return 0
+
 
     def get_file_total_size_for_human(self):
         from app.modules.dataset.services import SizeService
@@ -123,7 +134,8 @@ class DataSet(db.Model):
             "download": f'{request.host_url.rstrip("/")}/dataset/download/{self.id}',
             "download_count": self.download_count,
             "zenodo": self.get_zenodo_url(),
-            "files": [file.to_dict() for fm in self.feature_models for file in fm.files],
+            "files": [file.to_dict() for file in self.files()],
+
             "files_count": self.get_files_count(),
             "total_size_in_bytes": self.get_file_total_size(),
             "total_size_in_human_format": self.get_file_total_size_for_human(),
