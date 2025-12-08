@@ -123,7 +123,7 @@ class DataSetRepository(BaseRepository):
         )
 
         total_activity_col = (
-            func.coalesce(downloads_subquery.c.download_count, 0) 
+            func.coalesce(downloads_subquery.c.download_count, 0) +
             func.coalesce(views_subquery.c.view_count, 0)
         )
 
