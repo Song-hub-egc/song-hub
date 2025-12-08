@@ -161,7 +161,7 @@ class DatasetCommentRepository(BaseRepository):
 
     def get_dataset_comments(self, dataset_id: int, include_deleted: bool = False):
         """Get comments for a dataset"""
-        query = self.model.query.filter_by(dataset_id=dataset_id, parent_id=None)
+        query = self.model.query.filter_by(dataset_id=dataset_id)
         if not include_deleted:
             query = query.filter_by(is_deleted=False)
         return query.order_by(self.model.created_at.desc()).all()

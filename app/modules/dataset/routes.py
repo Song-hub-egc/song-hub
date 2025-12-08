@@ -296,16 +296,13 @@ def create_comment(dataset_id):
 
     data = request.get_json()
     content = data.get('content', '').strip()
-    parent_id = data.get('parent_id')
-
     if not content:
         return jsonify({"success": False, "message": "Comment content is required"}), 400
 
     comment = comment_service.create_comment(
         dataset_id=dataset_id,
         user_id=current_user.id,
-        content=content,
-        parent_id=parent_id
+        content=content
     )
 
     return jsonify({

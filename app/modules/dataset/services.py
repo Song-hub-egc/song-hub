@@ -186,13 +186,12 @@ class DatasetCommentService(BaseService):
         """Get all comments for a dataset"""
         return self.repository.get_dataset_comments(dataset_id)
 
-    def create_comment(self, dataset_id: int, user_id: int, content: str, parent_id: int = None):
-        """Create a new comment or reply"""
+    def create_comment(self, dataset_id: int, user_id: int, content: str):
+        """Create a new comment"""
         return self.repository.create(
             dataset_id=dataset_id,
             user_id=user_id,
-            content=content,
-            parent_id=parent_id
+            content=content
         )
 
     def update_comment(self, comment_id: int, content: str, user_id: int):
