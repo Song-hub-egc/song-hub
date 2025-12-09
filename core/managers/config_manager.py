@@ -34,7 +34,7 @@ class Config:
     TIMEZONE = "Europe/Madrid"
     TEMPLATES_AUTO_RELOAD = True
     UPLOAD_FOLDER = "uploads"
-    
+
     SESSION_TYPE = "sqlalchemy"
     SESSION_PERMANENT = False
     SESSION_USE_SIGNER = True
