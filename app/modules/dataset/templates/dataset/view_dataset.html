@@ -526,11 +526,23 @@
                             ${datasetOwnerId == comment.user_id ? '<span class="comment-badge badge-author">OP</span>' : ''}
                             <span class="comment-meta">
                                 <span class="separator">•</span>
-                                <span>${getRelativeTime(comment.created_at)}</span>
+                                <span>${comment.updated_at ? `Posted: ${getRelativeTime(comment.created_at)}, Edited: ${getRelativeTime(comment.updated_at)}` : getRelativeTime(comment.created_at)}</span>
                             </span>
+                            ${currentUserId == comment.user_id ? `
+                                <button class="btn btn-link btn-sm p-0 ms-auto text-muted" onclick="enableEdit(${comment.id})" title="Edit comment">
+                                    <i data-feather="edit-2" class="feather-sm"></i>
+                                </button>
+                            ` : ''}
                         </div>
-                        <div class="comment-body">
+                        <div class="comment-body" id="comment-body-${comment.id}">
                             <div class="comment-text">${escapeHtml(comment.content)}</div>
+                        </div>
+                        <div class="comment-edit-form" id="edit-form-${comment.id}">
+                            <textarea class="form-control mb-2" id="edit-textarea-${comment.id}" rows="3"></textarea>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="cancelEdit(${comment.id})">Cancel</button>
+                                <button class="btn btn-sm btn-primary" onclick="saveEdit(${comment.id})">Save</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -595,6 +607,53 @@
         } catch (error) {
             console.error('Error posting comment:', error);
             alert('Error posting comment. Please try again.');
+        }
+    }
+
+    function enableEdit(commentId) {
+        const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+        const commentBody = document.getElementById(`comment-body-${commentId}`);
+        const textarea = document.getElementById(`edit-textarea-${commentId}`);
+        const currentContent = commentBody.querySelector('.comment-text').innerText;
+
+        textarea.value = currentContent;
+        commentItem.classList.add('editing');
+        textarea.focus();
+    }
+
+    function cancelEdit(commentId) {
+        const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+        commentItem.classList.remove('editing');
+    }
+
+    async function saveEdit(commentId) {
+        const textarea = document.getElementById(`edit-textarea-${commentId}`);
+        const content = textarea.value.trim();
+
+        if (!content) {
+            alert('Comment cannot be empty');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/comments/${commentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Update specific comment in UI without full reload if possible,
+                // but for simplicity we can reload comments or update DOM directly
+                loadComments();
+            } else {
+                alert(data.message || 'Error updating comment');
+            }
+        } catch (error) {
+            console.error('Error updating comment:', error);
+            alert('Error updating comment');
         }
     }
 
