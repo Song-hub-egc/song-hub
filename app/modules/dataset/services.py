@@ -201,12 +201,17 @@ class DatasetCommentService(BaseService):
             return self.repository.update_comment(comment_id, content)
         return None
 
-    def delete_comment(self, comment_id: int, user_id: int, is_admin: bool = False):
-        """Delete a comment"""
+    def delete_comment(self, comment_id: int, current_user_id: int):
+        """Delete a comment (only by the dataset owner)"""
         comment = self.repository.get_by_id(comment_id)
         if not comment or comment.is_deleted:
             return None
-        return self.repository.soft_delete_comment(comment_id, user_id)
+
+        # Check if current user is the owner of the dataset
+        if comment.dataset.user_id != current_user_id:
+            return None
+
+        return self.repository.soft_delete_comment(comment_id, current_user_id)
 
 class DSDownloadRecordService(BaseService):
     def __init__(self):

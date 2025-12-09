@@ -338,7 +338,7 @@ def update_comment(comment_id):
 @login_required
 def delete_comment(comment_id):
     """Delete a comment"""
-    comment = comment_service.delete_comment(comment_id, current_user.id, is_admin)
+    comment = comment_service.delete_comment(comment_id, current_user.id)
 
     if not comment:
         return jsonify({"success": False, "message": "Comment not found or unauthorized"}), 404
