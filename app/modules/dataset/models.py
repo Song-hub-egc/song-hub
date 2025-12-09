@@ -190,8 +190,8 @@ class DatasetComment(db.Model):
             'dataset_id': self.dataset_id,
             'user_id': self.user_id,
             'content': self.content if not self.is_deleted else '[Comment deleted]',
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'created_at': self.created_at.isoformat() + 'Z',
+            'updated_at': (self.updated_at.isoformat() + 'Z') if self.updated_at else None,
             'is_deleted': self.is_deleted,
             'author': {
                 'id': self.author.id,
