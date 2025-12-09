@@ -2,7 +2,7 @@ from flask import current_app, jsonify, redirect, render_template, request, sess
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.modules.auth import auth_bp
-from app.modules.auth.forms import LoginForm, SignupForm, TwoFactorSetupForm, TwoFactorVerifyForm
+from app.modules.auth.forms import LoginForm, SignupForm, TwoFactorVerifyForm
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.services import AuthenticationService, SessionService
 from app.modules.profile.services import UserProfileService

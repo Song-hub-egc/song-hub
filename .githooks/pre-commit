@@ -1,40 +1,87 @@
 #!/bin/sh
-#
-# Script de hook pre-commit para verificar el formato y la organización del código.
-# Se ejecuta automáticamente antes de cada `git commit`.
+# Hook pre-commit: arregla automáticamente TODO el código Python antes de bloquear el commit (incluye tests u otros archivos no staged).
 
-# Ejecutar isort para ordenar las importaciones en las carpetas del proyecto.
-# Si falla, se aborta el commit.
-if command -v isort >/dev/null 2>&1
-then
-    echo "Ejecutando isort en las carpetas app, rosemary y core..."
-    isort app rosemary core || { echo "Error al ejecutar isort. Commit abortado." >&2; exit 1; }
-else
-    echo "isort no encontrado en el PATH; omitiendo isort." >&2
-fi
+set -e
 
-# Ejecutar black para formatear el código.
-# Si falla, se aborta el commit.
-if command -v black >/dev/null 2>&1
-then
-    echo "Ejecutando black en las carpetas app, rosemary y core..."
-    black app rosemary core || { echo "Error al ejecutar black. Commit abortado." >&2; exit 1; }
-else
-    echo "black no encontrado en el PATH; omitiendo black." >&2
-fi
+TARGET_DIRS=${HOOK_TARGETS:-"app rosemary core"}
 
-# Verificación final de espacios en blanco en los archivos modificados
-echo "Verificando espacios en blanco..."
-git diff --cached --name-only | grep '\.py$' | while read -r file; do
-    # Eliminar espacios en blanco al final de las líneas y verificar que no haya líneas vacías.
-    if grep -q '[[:space:]]$' "$file"; then
-        echo "❌ Espacios en blanco al final de las líneas en $file. Corrigiendo..."
-        # Eliminar los espacios en blanco al final de las líneas
-        sed -i 's/[[:space:]]*$//' "$file"
-        git add "$file"
+# Normalizamos la lista de rutas existentes para evitar errores en find
+DIRS_FOUND=""
+for dir in $TARGET_DIRS; do
+    if [ -d "$dir" ]; then
+        DIRS_FOUND="$DIRS_FOUND $dir"
     fi
 done
 
-# Si todo está bien, el commit continúa
-echo "✅ Formato y organización del código verificados correctamente."
+if [ -z "$DIRS_FOUND" ]; then
+    echo "No se encontraron directorios objetivo para formatear."
+    exit 0
+fi
+
+# Guardamos qué archivos estaban staged antes de modificar nada para re-staggearlos después
+STAGED_TMP=$(mktemp)
+trap 'rm -f "$STAGED_TMP"' EXIT
+git diff --cached --name-only --diff-filter=ACM -z -- '*.py' >"$STAGED_TMP" || true
+
+run_tool() {
+    tool="$1"
+    shift
+    msg="$1"
+    shift
+
+    if command -v "$tool" >/dev/null 2>&1; then
+        echo "$msg"
+        find $DIRS_FOUND -type f -name '*.py' -exec "$tool" "$@" {} + || {
+            echo "Error al ejecutar $tool. Commit abortado." >&2
+            exit 1
+        }
+    else
+        echo "$tool no encontrado en el PATH; omitiendo." >&2
+    fi
+}
+
+# Intentamos arreglar automáticamente antes de lintar
+run_tool autoflake "Eliminando importaciones no utilizadas con autoflake..." \
+    --in-place --remove-all-unused-imports --ignore-init-module-imports
+
+run_tool isort "Ordenando importaciones con isort..." \
+    --
+
+run_tool black "Formateando con black..." \
+    --
+
+echo "Corrigiendo espacios en blanco finales..."
+find $DIRS_FOUND -type f -name '*.py' -print0 | while IFS= read -r -d '' file; do
+    python - "$file" <<'PY'
+import pathlib, sys
+
+path = pathlib.Path(sys.argv[1])
+text = path.read_text()
+fixed = "\n".join(line.rstrip() for line in text.splitlines())
+# Conserva salto final si existía
+if text.endswith("\n"):
+    fixed += "\n"
+
+if fixed != text:
+    path.write_text(fixed)
+PY
+done
+
+# Re-staggeamos solo lo que ya estaba staged, para no añadir archivos inesperados al commit
+if [ -s "$STAGED_TMP" ]; then
+    xargs -0 git add <"$STAGED_TMP"
+fi
+
+# Lint final: si aún hay errores que no podemos corregir automáticamente, se aborta el commit.
+if command -v flake8 >/dev/null 2>&1; then
+    echo "Ejecutando flake8..."
+    find $DIRS_FOUND -type f -name '*.py' -exec flake8 {} + || {
+        echo "Flake8 encontró errores que no se pudieron corregir automáticamente. Commit abortado." >&2
+        exit 1
+    }
+else
+    echo "flake8 no encontrado en el PATH; omitiendo flake8." >&2
+fi
+
+echo "✅ Formato corregido y lint superado en todo el proyecto objetivo."
 exit 0

@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from flask import session as flask_session
-from flask import url_for
 
 from app import db
 from app.modules.auth.models import User, UserSession
@@ -47,7 +45,6 @@ def test_session_service_create_session(test_client):
         user = db.session.query(User).filter_by(email="test@example.com").first()
         service = SessionService()
 
-        from flask import Flask
         from werkzeug.test import EnvironBuilder
 
         builder = EnvironBuilder(method="GET", path="/")
