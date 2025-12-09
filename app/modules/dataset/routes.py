@@ -278,7 +278,7 @@ def get_unsynchronized_dataset(dataset_id):
 @dataset_bp.route("/datasets/<int:dataset_id>/stats", methods=["GET"])
 def get_dataset_stats(dataset_id):
     """Get dataset statistics including downloads, views, etc."""
-    from app.modules.dataset.models import DSViewRecord, DSDownloadRecord
+    from app.modules.dataset.models import DSDownloadRecord, DSViewRecord
 
     dataset = dataset_service.get_or_404(dataset_id)
 
@@ -288,14 +288,16 @@ def get_dataset_stats(dataset_id):
     # Get total downloads count
     total_downloads_records = DSDownloadRecord.query.filter_by(dataset_id=dataset_id).count()
 
-    return jsonify({
-        "dataset_id": dataset_id,
-        "title": dataset.ds_meta_data.title,
-        "download_count": dataset.download_count,
-        "total_download_records": total_downloads_records,
-        "total_views": total_views,
-        "created_at": dataset.created_at.isoformat(),
-        "files_count": dataset.get_files_count(),
-        "total_size_bytes": dataset.get_file_total_size(),
-        "publication_type": dataset.get_cleaned_publication_type()
-    })
+    return jsonify(
+        {
+            "dataset_id": dataset_id,
+            "title": dataset.ds_meta_data.title,
+            "download_count": dataset.download_count,
+            "total_download_records": total_downloads_records,
+            "total_views": total_views,
+            "created_at": dataset.created_at.isoformat(),
+            "files_count": dataset.get_files_count(),
+            "total_size_bytes": dataset.get_file_total_size(),
+            "publication_type": dataset.get_cleaned_publication_type(),
+        }
+    )

@@ -1,6 +1,8 @@
-import pytest
 from datetime import datetime, timedelta, timezone
-from flask import session as flask_session, url_for
+
+import pytest
+from flask import session as flask_session
+from flask import url_for
 
 from app import db
 from app.modules.auth.models import User, UserSession
@@ -48,11 +50,12 @@ def test_session_service_create_session(test_client):
         from flask import Flask
         from werkzeug.test import EnvironBuilder
 
-        builder = EnvironBuilder(method='GET', path='/')
+        builder = EnvironBuilder(method="GET", path="/")
         env = builder.get_environ()
 
         with test_client.application.test_request_context(environ_base=env):
             from flask import request
+
             session_id = "test_session_create"
             user_session = service.create_session(user, request, session_id)
 
@@ -74,7 +77,7 @@ def test_session_service_get_active_sessions(test_client):
             user_id=user.id,
             session_id=session_hash,
             ip_address="127.0.0.1",
-            expires_at=datetime.now(timezone.utc) + timedelta(days=1)
+            expires_at=datetime.now(timezone.utc) + timedelta(days=1),
         )
         db.session.add(user_session)
         db.session.commit()
@@ -95,7 +98,7 @@ def test_session_service_revoke_session(test_client):
             user_id=user.id,
             session_id=session_hash,
             ip_address="127.0.0.1",
-            expires_at=datetime.now(timezone.utc) + timedelta(days=1)
+            expires_at=datetime.now(timezone.utc) + timedelta(days=1),
         )
         db.session.add(user_session)
         db.session.commit()
@@ -128,7 +131,7 @@ def test_session_service_revoke_all_except_current(test_client):
                 user_id=user.id,
                 session_id=session_hash,
                 ip_address="127.0.0.1",
-                expires_at=datetime.now(timezone.utc) + timedelta(days=1)
+                expires_at=datetime.now(timezone.utc) + timedelta(days=1),
             )
             db.session.add(user_session)
         db.session.commit()
@@ -150,7 +153,7 @@ def test_session_service_cleanup_expired_sessions(test_client):
             user_id=user.id,
             session_id=expired_hash,
             ip_address="127.0.0.1",
-            expires_at=datetime.now(timezone.utc) - timedelta(days=1)
+            expires_at=datetime.now(timezone.utc) - timedelta(days=1),
         )
         db.session.add(expired_session)
         db.session.commit()
@@ -185,7 +188,7 @@ def test_revoke_session_authenticated(logged_in_client):
             user_id=user.id,
             session_id=session_hash,
             ip_address="127.0.0.1",
-            expires_at=datetime.now(timezone.utc) + timedelta(days=1)
+            expires_at=datetime.now(timezone.utc) + timedelta(days=1),
         )
         db.session.add(user_session)
         db.session.commit()
@@ -202,7 +205,7 @@ def test_revoke_current_session_fails(logged_in_client):
         service = SessionService()
 
         with logged_in_client.session_transaction() as sess:
-            current_session_id = sess.get('_id')
+            current_session_id = sess.get("_id")
 
         if current_session_id:
             session_hash = service.get_session_hash(current_session_id)
@@ -212,7 +215,7 @@ def test_revoke_current_session_fails(logged_in_client):
                 session_id=session_hash,
                 ip_address="127.0.0.1",
                 expires_at=datetime.now(timezone.utc) + timedelta(days=1),
-                is_current=True
+                is_current=True,
             )
             db.session.add(user_session)
             db.session.commit()
@@ -237,7 +240,7 @@ def test_revoke_all_sessions_authenticated(logged_in_client):
                 user_id=user.id,
                 session_id=session_hash,
                 ip_address="127.0.0.1",
-                expires_at=datetime.now(timezone.utc) + timedelta(days=1)
+                expires_at=datetime.now(timezone.utc) + timedelta(days=1),
             )
             db.session.add(user_session)
         db.session.commit()
@@ -258,7 +261,7 @@ def test_user_session_model_update_activity(test_client):
             user_id=user.id,
             session_id=session_hash,
             ip_address="127.0.0.1",
-            expires_at=datetime.now(timezone.utc) + timedelta(days=1)
+            expires_at=datetime.now(timezone.utc) + timedelta(days=1),
         )
         db.session.add(user_session)
         db.session.commit()

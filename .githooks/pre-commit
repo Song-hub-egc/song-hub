@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# Script de hook pre-commit para verificar el formato y la organización del código.
+# Se ejecuta automáticamente antes de cada `git commit`.
+
+# Ejecutar isort para ordenar las importaciones en las carpetas del proyecto.
+# Si falla, se aborta el commit.
+if command -v isort >/dev/null 2>&1
+then
+    echo "Ejecutando isort en las carpetas app, rosemary y core..."
+    isort app rosemary core || { echo "Error al ejecutar isort. Commit abortado." >&2; exit 1; }
+else
+    echo "isort no encontrado en el PATH; omitiendo isort." >&2
+fi
+
+# Ejecutar black para formatear el código.
+# Si falla, se aborta el commit.
+if command -v black >/dev/null 2>&1
+then
+    echo "Ejecutando black en las carpetas app, rosemary y core..."
+    black app rosemary core || { echo "Error al ejecutar black. Commit abortado." >&2; exit 1; }
+else
+    echo "black no encontrado en el PATH; omitiendo black." >&2
+fi
+
+# Verificación final de espacios en blanco en los archivos modificados
+echo "Verificando espacios en blanco..."
+git diff --cached --name-only | grep '\.py$' | while read -r file; do
+    # Eliminar espacios en blanco al final de las líneas y verificar que no haya líneas vacías.
+    if grep -q '[[:space:]]$' "$file"; then
+        echo "❌ Espacios en blanco al final de las líneas en $file. Corrigiendo..."
+        # Eliminar los espacios en blanco al final de las líneas
+        sed -i 's/[[:space:]]*$//' "$file"
+        git add "$file"
+    fi
+done
+
+# Si todo está bien, el commit continúa
+echo "✅ Formato y organización del código verificados correctamente."
+exit 0

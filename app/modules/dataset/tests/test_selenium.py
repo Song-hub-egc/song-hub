@@ -1,11 +1,11 @@
 import os
 import time
 
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver.support.ui import WebDriverWait
 
 from core.environment.host import get_host_for_selenium_testing
 from core.selenium.common import close_driver, initialize_driver
@@ -100,9 +100,7 @@ def test_upload_dataset():
 
         # Add authors in UVL models - wait for the UI to render the buttons
         try:
-            show_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.ID, "0_button"))
-            )
+            show_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "0_button")))
             show_button.click()
 
             add_author_uvl_button = WebDriverWait(driver, 10).until(
@@ -112,7 +110,7 @@ def test_upload_dataset():
             wait_for_page_to_load(driver)
         except TimeoutException:
             # Make the failure clearer in test output
-            raise NoSuchElementException('Could not find UVL model buttons (0_button / 0_form_authors_button)')
+            raise NoSuchElementException("Could not find UVL model buttons (0_button / 0_form_authors_button)")
 
         name_field = driver.find_element(By.NAME, "feature_models-0-authors-2-name")
         name_field.send_keys("Author3")
@@ -154,7 +152,6 @@ def test_upload_dataset():
         close_driver(driver)
 
 
-  
 def test_trending_datasets():
     driver = initialize_driver()
 
@@ -171,7 +168,7 @@ def test_trending_datasets():
         driver.find_element(By.ID, "submit").click()
 
         try:
-            download = driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple") 
+            download = driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple")
         except NoSuchElementException:
             download = None
 
@@ -183,10 +180,13 @@ def test_trending_datasets():
         driver.find_element(By.LINK_TEXT, "Download (1.21 KB)").click()
         driver.get(host)
 
-        assert driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple").text.split(" ")[0] == str(download + 1)
-  
+        assert driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple").text.split(" ")[0] == str(
+            download + 1
+        )
+
     finally:
         # Close the browser
         close_driver(driver)
+
 
 # Tests are executed by pytest; do not invoke them at import time.
