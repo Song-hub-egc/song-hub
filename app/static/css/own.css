@@ -494,3 +494,22 @@
 .comment-item.editing .comment-edit-form {
     display: block;
 }
+
+/* Comment Delete State */
+.btn-edit-comment {
+    color: #6c757d;
+    /* text-muted */
+}
+
+.btn-edit-comment:hover {
+    color: #495057;
+}
+
+.btn-delete-comment {
+    color: #dc3545;
+    /* text-danger */
+}
+
+.btn-delete-comment:hover {
+    color: #bb2d3b;
+}
