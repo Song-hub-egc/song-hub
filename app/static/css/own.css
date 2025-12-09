@@ -481,3 +481,16 @@
 .alert-rounded {
     border-radius: 12px;
 }
+
+/* Comment Editing State */
+.comment-edit-form {
+    display: none;
+}
+
+.comment-item.editing .comment-body {
+    display: none;
+}
+
+.comment-item.editing .comment-edit-form {
+    display: block;
+}
