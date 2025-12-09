@@ -1,0 +1,115 @@
+2025-12-08 23:34:49,359 - app - ERROR - Exception when querying database ((pymysql.err.OperationalError) (1020, "Record has changed since last read in table 'flask_sessions'")
+[SQL: UPDATE flask_sessions SET expiry=%(expiry)s WHERE flask_sessions.id = %(flask_sessions_id)s]
+[parameters: {'expiry': datetime.datetime(2025, 12, 15, 22, 34, 49, 343495), 'flask_sessions_id': 65}]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)).Retrying (1/3) in 0.30s.
+Traceback (most recent call last):
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1961, in _exec_single_context
+    self.dialect.do_execute(
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 944, in do_execute
+    cursor.execute(statement, parameters)
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/cursors.py", line 153, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/cursors.py", line 322, in _query
+    conn.query(q)
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/connections.py", line 563, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/connections.py", line 825, in _read_query_result
+    result.read()
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/connections.py", line 1199, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/connections.py", line 775, in _read_packet
+    packet.raise_for_error()
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.OperationalError: (1020, "Record has changed since last read in table 'flask_sessions'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/flask_session/_utils.py", line 52, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/flask_session/sqlalchemy/sqlalchemy.py", line 186, in _upsert_session
+    self.client.session.commit()
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/scoping.py", line 599, in commit
+    return self._proxied.commit()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1313, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1288, in _prepare_impl
+    self.session.flush()
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4345, in flush
+    self._flush(objects)
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4480, in _flush
+    with util.safe_reraise():
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4441, in _flush
+    flush_context.execute()
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 85, in save_obj
+    _emit_update_statements(
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 912, in _emit_update_statements
+    c = connection.execute(
+        ^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1413, in execute
+    return meth(
+           ^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1635, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1840, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1980, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2349, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1961, in _exec_single_context
+    self.dialect.do_execute(
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 944, in do_execute
+    cursor.execute(statement, parameters)
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/cursors.py", line 153, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/cursors.py", line 322, in _query
+    conn.query(q)
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/connections.py", line 563, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/connections.py", line 825, in _read_query_result
+    result.read()
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/connections.py", line 1199, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/connections.py", line 775, in _read_packet
+    packet.raise_for_error()
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "/Users/jesusvillalbafernandez/Desktop/Proyecto songhub/song-hub/venv/lib/python3.11/site-packages/pymysql/err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (1020, "Record has changed since last read in table 'flask_sessions'")
+[SQL: UPDATE flask_sessions SET expiry=%(expiry)s WHERE flask_sessions.id = %(flask_sessions_id)s]
+[parameters: {'expiry': datetime.datetime(2025, 12, 15, 22, 34, 49, 343495), 'flask_sessions_id': 65}]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
