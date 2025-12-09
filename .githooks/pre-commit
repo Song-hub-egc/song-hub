@@ -45,14 +45,14 @@ run_tool autoflake "Eliminando importaciones no utilizadas con autoflake..." \
     --in-place --remove-all-unused-imports --ignore-init-module-imports
 
 run_tool isort "Ordenando importaciones con isort..." \
-    --
+    --line-length 120 --
 
 run_tool black "Formateando con black..." \
-    --
+    --line-length 120 --
 
 echo "Corrigiendo espacios en blanco finales..."
 find $DIRS_FOUND -type f -name '*.py' -print0 | while IFS= read -r -d '' file; do
-    python - "$file" <<'PY'
+    python3 - "$file" <<'PY'
 import pathlib, sys
 
 path = pathlib.Path(sys.argv[1])
@@ -75,7 +75,7 @@ fi
 # Lint final: si aún hay errores que no podemos corregir automáticamente, se aborta el commit.
 if command -v flake8 >/dev/null 2>&1; then
     echo "Ejecutando flake8..."
-    find $DIRS_FOUND -type f -name '*.py' -exec flake8 {} + || {
+    find $DIRS_FOUND -type f -name '*.py' -exec flake8 --max-line-length 120 --extend-ignore E203,W503 {} + || {
         echo "Flake8 encontró errores que no se pudieron corregir automáticamente. Commit abortado." >&2
         exit 1
     }

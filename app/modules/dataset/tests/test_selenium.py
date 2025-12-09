@@ -172,7 +172,7 @@ def test_trending_datasets():
         except NoSuchElementException:
             download = None
 
-        if download != None:
+        if download is not None:
             download = int(download.text.split(" ")[0])
         else:
             download = 0
