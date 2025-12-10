@@ -15,11 +15,11 @@ def setup_session_tracking(app):
 
     @app.before_request
     def track_session():
-        if request.path.startswith('/static'):
+        if request.path.startswith("/static"):
             return
 
         if current_user.is_authenticated:
-            session_id = session.get('_id')
+            session_id = session.get("_id")
 
             if not session_id:
                 return
@@ -29,15 +29,15 @@ def setup_session_tracking(app):
             if not existing_session:
                 logout_user()
                 session.clear()
-                return redirect(url_for('auth.login'))
+                return redirect(url_for("auth.login"))
             else:
-                last_update = session.get('_last_activity_update')
+                last_update = session.get("_last_activity_update")
                 now = datetime.utcnow()
 
                 if not last_update or (now - datetime.fromisoformat(last_update)).total_seconds() > 30:
                     try:
                         session_service.update_session_activity(session_id, current_user)
                         session_service.mark_as_current(session_id, current_user)
-                        session['_last_activity_update'] = now.isoformat()
+                        session["_last_activity_update"] = now.isoformat()
                     except Exception:
                         pass

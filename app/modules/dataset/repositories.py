@@ -104,8 +104,7 @@ class DataSetRepository(BaseRepository):
 
         downloads_subquery = (
             self.session.query(
-                DSDownloadRecord.dataset_id,
-                func.count(func.distinct(DSDownloadRecord.id)).label('download_count')
+                DSDownloadRecord.dataset_id, func.count(func.distinct(DSDownloadRecord.id)).label("download_count")
             )
             .filter(DSDownloadRecord.download_date >= cutoff_date)
             .group_by(DSDownloadRecord.dataset_id)
@@ -113,26 +112,22 @@ class DataSetRepository(BaseRepository):
         )
 
         views_subquery = (
-            self.session.query(
-                DSViewRecord.dataset_id,
-                func.count(func.distinct(DSViewRecord.id)).label('view_count')
-            )
+            self.session.query(DSViewRecord.dataset_id, func.count(func.distinct(DSViewRecord.id)).label("view_count"))
             .filter(DSViewRecord.view_date >= cutoff_date)
             .group_by(DSViewRecord.dataset_id)
             .subquery()
         )
 
-        total_activity_col = (
-            func.coalesce(downloads_subquery.c.download_count, 0) +
-            func.coalesce(views_subquery.c.view_count, 0)
+        total_activity_col = func.coalesce(downloads_subquery.c.download_count, 0) + func.coalesce(
+            views_subquery.c.view_count, 0
         )
 
         result = (
             self.session.query(
                 DataSet,
-                func.coalesce(downloads_subquery.c.download_count, 0).label('downloads'),
-                func.coalesce(views_subquery.c.view_count, 0).label('views'),
-                total_activity_col.label('total_activity')
+                func.coalesce(downloads_subquery.c.download_count, 0).label("downloads"),
+                func.coalesce(views_subquery.c.view_count, 0).label("views"),
+                total_activity_col.label("total_activity"),
             )
             .join(DSMetaData, DataSet.ds_meta_data_id == DSMetaData.id)
             .outerjoin(downloads_subquery, DataSet.id == downloads_subquery.c.dataset_id)

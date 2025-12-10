@@ -52,10 +52,7 @@ class User(db.Model, UserMixin):
     def get_totp_uri(self) -> str:
         if not self.two_factor_secret:
             return ""
-        return pyotp.totp.TOTP(self.two_factor_secret).provisioning_uri(
-            name=self.email,
-            issuer_name="UVLHUB.IO"
-        )
+        return pyotp.totp.TOTP(self.two_factor_secret).provisioning_uri(name=self.email, issuer_name="UVLHUB.IO")
 
     def verify_totp(self, token: str, check_enabled: bool = True) -> bool:
         if not self.two_factor_secret:
@@ -98,7 +95,8 @@ class User(db.Model, UserMixin):
         img.save(buffered, format="PNG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
         return f"data:image/png;base64,{img_str}"
-    
+
+
 class UserSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -118,9 +116,10 @@ class UserSession(db.Model):
 
     def parse_user_agent(self, user_agent_string):
         from user_agents import parse
+
         user_agent = parse(user_agent_string)
 
-        self.device_type = 'mobile' if user_agent.is_mobile else 'tablet' if user_agent.is_tablet else 'desktop'
+        self.device_type = "mobile" if user_agent.is_mobile else "tablet" if user_agent.is_tablet else "desktop"
         self.browser = user_agent.browser.family
         self.os = user_agent.os.family
         self.user_agent = user_agent_string
@@ -134,11 +133,11 @@ class UserSession(db.Model):
         self.last_activity = datetime.utcnow()
 
     def get_device_icon(self):
-        if self.device_type == 'mobile':
-            return 'fa-mobile'
-        elif self.device_type == 'tablet':
-            return 'fa-tablet'
-        return 'fa-laptop'
+        if self.device_type == "mobile":
+            return "fa-mobile"
+        elif self.device_type == "tablet":
+            return "fa-tablet"
+        return "fa-laptop"
 
     def get_time_since_activity(self):
         delta = datetime.utcnow() - self.last_activity

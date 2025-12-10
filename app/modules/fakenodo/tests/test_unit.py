@@ -56,9 +56,7 @@ def test_update_deposition_metadata(fakenodo_client):
     deposition_id = created["id"]
 
     updated_metadata = {"title": "Updated title"}
-    update_resp = fakenodo_client.patch(
-        f"/fakenodo/api/{deposition_id}", json={"metadata": updated_metadata}
-    )
+    update_resp = fakenodo_client.patch(f"/fakenodo/api/{deposition_id}", json={"metadata": updated_metadata})
     assert update_resp.status_code == 200
     assert update_resp.get_json()["metadata"] == updated_metadata
 
@@ -127,9 +125,7 @@ def test_publish_new_version_after_adding_file(fakenodo_client):
     )
     assert upload_second.status_code == 201
 
-    publish_second_version = fakenodo_client.post(
-        f"/fakenodo/api/{deposition_id}/actions/publish"
-    )
+    publish_second_version = fakenodo_client.post(f"/fakenodo/api/{deposition_id}/actions/publish")
     assert publish_second_version.status_code == 202
     assert publish_second_version.get_json()["version"] == 2
 

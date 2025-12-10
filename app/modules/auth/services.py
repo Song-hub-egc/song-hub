@@ -1,6 +1,6 @@
+import hashlib
 import os
 import secrets
-import hashlib
 from datetime import datetime, timedelta
 
 from flask import current_app, has_request_context, request, session
@@ -121,15 +121,16 @@ class AuthenticationService(BaseService):
         self.repository.session.commit()
         return backup_codes
 
+
 class SessionService:
 
     def _get_or_set_session_identifier(self):
         if not has_request_context():
             return None
-        session_id = session.get('_id')
+        session_id = session.get("_id")
         if not session_id:
             session_id = secrets.token_hex(32)
-            session['_id'] = session_id
+            session["_id"] = session_id
         return session_id
 
     def register_current_session(self, user):
@@ -143,16 +144,16 @@ class SessionService:
         return hashlib.sha256(session_id.encode()).hexdigest()
 
     def get_active_sessions(self, user):
-        return UserSession.query.filter_by(user_id=user.id).filter(
-            UserSession.expires_at > datetime.utcnow()
-        ).order_by(UserSession.last_activity.desc()).all()
+        return (
+            UserSession.query.filter_by(user_id=user.id)
+            .filter(UserSession.expires_at > datetime.utcnow())
+            .order_by(UserSession.last_activity.desc())
+            .all()
+        )
 
     def get_session_by_id(self, session_id, user):
         session_hash = self.get_session_hash(session_id)
-        return UserSession.query.filter_by(
-            session_id=session_hash,
-            user_id=user.id
-        ).first()
+        return UserSession.query.filter_by(session_id=session_hash, user_id=user.id).first()
 
     def create_session(self, user, request, session_id):
         session_hash = self.get_session_hash(session_id)
@@ -167,10 +168,10 @@ class SessionService:
             user_id=user.id,
             session_id=session_hash,
             ip_address=self.get_client_ip(request),
-            expires_at=datetime.utcnow() + timedelta(days=7)
+            expires_at=datetime.utcnow() + timedelta(days=7),
         )
 
-        user_agent_string = request.headers.get('User-Agent', '')
+        user_agent_string = request.headers.get("User-Agent", "")
         user_session.parse_user_agent(user_agent_string)
 
         location = self.get_location_from_ip(user_session.ip_address)
@@ -183,10 +184,7 @@ class SessionService:
 
     def revoke_session(self, session_id, user):
         session_hash = self.get_session_hash(session_id)
-        user_session = UserSession.query.filter_by(
-            session_id=session_hash,
-            user_id=user.id
-        ).first()
+        user_session = UserSession.query.filter_by(session_id=session_hash, user_id=user.id).first()
 
         if user_session:
             db.session.delete(user_session)
@@ -195,23 +193,20 @@ class SessionService:
         return False
 
     def revoke_session_by_hash(self, session_hash, user):
-        user_session = UserSession.query.filter_by(
-            session_id=session_hash,
-            user_id=user.id
-        ).first()
+        user_session = UserSession.query.filter_by(session_id=session_hash, user_id=user.id).first()
 
         if user_session:
             from sqlalchemy import text
 
             db.session.delete(user_session)
 
-            prefix = 'uvlhub:session:'
+            prefix = "uvlhub:session:"
             session_key_pattern = f"{prefix}%"
 
             try:
                 result = db.session.execute(
                     text("SELECT session_id, data FROM flask_sessions WHERE session_id LIKE :pattern"),
-                    {"pattern": session_key_pattern}
+                    {"pattern": session_key_pattern},
                 )
 
                 for row in result:
@@ -220,15 +215,16 @@ class SessionService:
 
                     if session_data:
                         import pickle
+
                         try:
                             data = pickle.loads(session_data)
-                            stored_id = data.get('_id', '')
+                            stored_id = data.get("_id", "")
                             stored_hash = hashlib.sha256(stored_id.encode()).hexdigest()
 
                             if stored_hash == session_hash:
                                 db.session.execute(
                                     text("DELETE FROM flask_sessions WHERE session_id = :session_id"),
-                                    {"session_id": flask_session_id}
+                                    {"session_id": flask_session_id},
                                 )
                                 break
                         except Exception:
@@ -243,45 +239,38 @@ class SessionService:
     def revoke_all_except_current(self, user, current_session_id):
         current_hash = self.get_session_hash(current_session_id)
 
-        UserSession.query.filter(
-            UserSession.user_id == user.id,
-            UserSession.session_id != current_hash
-        ).delete()
+        UserSession.query.filter(UserSession.user_id == user.id, UserSession.session_id != current_hash).delete()
 
         db.session.commit()
         return True
 
     def update_session_activity(self, session_id, user):
         session_hash = self.get_session_hash(session_id)
-        user_session = UserSession.query.filter_by(
-            session_id=session_hash,
-            user_id=user.id
-        ).first()
+        user_session = UserSession.query.filter_by(session_id=session_hash, user_id=user.id).first()
 
         if user_session:
             user_session.update_activity()
             db.session.commit()
 
     def cleanup_expired_sessions(self):
-        UserSession.query.filter(
-            UserSession.expires_at < datetime.utcnow()
-        ).delete()
+        UserSession.query.filter(UserSession.expires_at < datetime.utcnow()).delete()
         db.session.commit()
 
     def get_client_ip(self, request):
-        if request.headers.get('X-Forwarded-For'):
-            return request.headers.get('X-Forwarded-For').split(',')[0].strip()
-        elif request.headers.get('X-Real-IP'):
-            return request.headers.get('X-Real-IP')
+        if request.headers.get("X-Forwarded-For"):
+            return request.headers.get("X-Forwarded-For").split(",")[0].strip()
+        elif request.headers.get("X-Real-IP"):
+            return request.headers.get("X-Real-IP")
         return request.remote_addr or "127.0.0.1"
 
     def get_location_from_ip(self, ip_address):
-        if not ip_address or ip_address in ['127.0.0.1', 'localhost', '::1']:
+        if not ip_address or ip_address in ["127.0.0.1", "localhost", "::1"]:
             return "Local"
 
         try:
             import geoip2.database
-            db_path = os.path.join(os.getcwd(), 'GeoLite2-City.mmdb')
+
+            db_path = os.path.join(os.getcwd(), "GeoLite2-City.mmdb")
 
             if not os.path.exists(db_path):
                 return "Unknown"
@@ -297,18 +286,13 @@ class SessionService:
     def mark_as_current(self, session_id, user):
         session_hash = self.get_session_hash(session_id)
 
-        UserSession.query.filter_by(user_id=user.id).update({'is_current': False})
+        UserSession.query.filter_by(user_id=user.id).update({"is_current": False})
 
-        current_session = UserSession.query.filter_by(
-            session_id=session_hash,
-            user_id=user.id
-        ).first()
+        current_session = UserSession.query.filter_by(session_id=session_hash, user_id=user.id).first()
 
         if current_session:
             current_session.is_current = True
             db.session.commit()
 
     def get_active_session_count(self, user):
-        return UserSession.query.filter_by(user_id=user.id).filter(
-            UserSession.expires_at > datetime.utcnow()
-        ).count()
+        return UserSession.query.filter_by(user_id=user.id).filter(UserSession.expires_at > datetime.utcnow()).count()
