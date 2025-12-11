@@ -186,7 +186,8 @@ class DatasetCommentRepository(BaseRepository):
         from datetime import datetime
         comment = self.get_by_id(comment_id)
         if comment and not comment.is_deleted:
-            comment.content = content
-            comment.updated_at = datetime.utcnow()
-            self.session.commit()
+            if comment.content != content:
+                comment.content = content
+                comment.updated_at = datetime.utcnow()
+                self.session.commit()
         return comment
