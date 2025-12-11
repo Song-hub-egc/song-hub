@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -42,13 +42,13 @@ def initialize_driver():
     if working_dir == "/app/" or use_selenium_grid:
         if driver_name == "chrome":
             options = webdriver.ChromeOptions()
-            options.add_argument("--headless")
+            # options.add_argument("--headless")  # Commented to show browser
             options.add_argument("--no-sandbox")
             options.add_argument("--disable-dev-shm-usage")
             driver = webdriver.Remote(command_executor=selenium_hub_url, options=options)
         elif driver_name == "firefox":
             options = webdriver.FirefoxOptions()
-            options.add_argument("--headless")
+            # options.add_argument("--headless")  # Commented to show browser
             driver = webdriver.Remote(command_executor=selenium_hub_url, options=options)
         else:
             raise Exception(f"Driver '{driver_name}' not supported.")
@@ -57,7 +57,7 @@ def initialize_driver():
     # --- Local mode ---
     if driver_name == "chrome":
         options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
+        # options.add_argument("--headless")  # Commented to show browser
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         # Allow using a preinstalled chromedriver via env var to avoid online download
@@ -76,7 +76,7 @@ def initialize_driver():
 
     elif driver_name == "firefox":
         options = webdriver.FirefoxOptions()
-        options.add_argument("--headless")
+        # options.add_argument("--headless")  # Commented to show browser
         # Allow using a preinstalled geckodriver via env var to avoid online download
         geckodriver_path = os.environ.get("GECKODRIVER_PATH")
         if geckodriver_path:

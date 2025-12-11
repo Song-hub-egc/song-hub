@@ -91,9 +91,9 @@ class DataSetService(BaseService):
 
     def total_dataset_views(self) -> int:
         return self.dsviewrecord_repostory.total_dataset_views()
-    
-    def get_trending_datasets(self, period='week', limit=10):
-        period_days = 7 if period == 'week' else 30 if period == 'month' else 7
+
+    def get_trending_datasets(self, period="week", limit=10):
+        period_days = 7 if period == "week" else 30 if period == "month" else 7
 
         trending_data = self.repository.get_trending_datasets(
             period_days=period_days,
@@ -107,19 +107,21 @@ class DataSetService(BaseService):
 
             community = None
             if dataset.ds_meta_data.tags:
-                tags = dataset.ds_meta_data.tags.split(',')
+                tags = dataset.ds_meta_data.tags.split(",")
                 community = tags[0].strip() if tags else None
 
-            result.append({
-                'id': dataset.id,
-                'title': dataset.ds_meta_data.title,
-                'main_author': main_author,
-                'community': community,
-                'downloads': int(downloads),
-                'views': int(views),
-                'total_activity': int(total_activity),
-                'dataset': dataset,
-            })
+            result.append(
+                {
+                    "id": dataset.id,
+                    "title": dataset.ds_meta_data.title,
+                    "main_author": main_author,
+                    "community": community,
+                    "downloads": int(downloads),
+                    "views": int(views),
+                    "total_activity": int(total_activity),
+                    "dataset": dataset,
+                }
+            )
 
         return result
 
@@ -170,6 +172,10 @@ class DataSetService(BaseService):
     def get_uvlhub_doi(self, dataset: DataSet) -> str:
         domain = os.getenv("DOMAIN", "localhost")
         return f"http://{domain}/doi/{dataset.ds_meta_data.dataset_doi}"
+
+    def increment_download_count(self, dataset_id: int):
+        """Increment the download count for a dataset"""
+        return self.repository.increment_download_count(dataset_id)
 
 
 class AuthorService(BaseService):

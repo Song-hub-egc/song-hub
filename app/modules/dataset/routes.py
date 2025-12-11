@@ -29,6 +29,7 @@ from app.modules.dataset.services import (
     DSDownloadRecordService,
     DSMetaDataService,
     DSViewRecordService,
+    DatasetCommentService
 )
 from app.modules.zenodo.services import ZenodoService
 
@@ -230,6 +231,9 @@ def download_dataset(dataset_id):
             download_cookie=user_cookie,
         )
 
+        # Increment download counter
+        dataset_service.increment_download_count(dataset_id)
+
     return resp
 
 
@@ -272,10 +276,36 @@ def get_unsynchronized_dataset(dataset_id):
     return render_template("dataset/view_dataset.html", dataset=dataset)
 
 
-# Comment endpoints
-from app.modules.dataset.services import DatasetCommentService
-comment_service = DatasetCommentService()
+@dataset_bp.route("/datasets/<int:dataset_id>/stats", methods=["GET"])
+def get_dataset_stats(dataset_id):
+    """Get dataset statistics including downloads, views, etc."""
+    from app.modules.dataset.models import DSDownloadRecord, DSViewRecord
 
+    dataset = dataset_service.get_or_404(dataset_id)
+
+    # Get total views count
+    total_views = DSViewRecord.query.filter_by(dataset_id=dataset_id).count()
+
+    # Get total downloads count
+    total_downloads_records = DSDownloadRecord.query.filter_by(dataset_id=dataset_id).count()
+
+    return jsonify(
+        {
+            "dataset_id": dataset_id,
+            "title": dataset.ds_meta_data.title,
+            "download_count": dataset.download_count,
+            "total_download_records": total_downloads_records,
+            "total_views": total_views,
+            "created_at": dataset.created_at.isoformat(),
+            "files_count": dataset.get_files_count(),
+            "total_size_bytes": dataset.get_file_total_size(),
+            "publication_type": dataset.get_cleaned_publication_type(),
+        }
+    )
+
+
+# Comment endpoints
+comment_service = DatasetCommentService()
 
 @dataset_bp.route("/datasets/<int:dataset_id>/comments", methods=["GET"])
 def get_comments(dataset_id):
