@@ -38,5 +38,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_index(op.f('ix_dataset_comment_dataset_id'), table_name='dataset_comment')
     op.drop_table('dataset_comment')
