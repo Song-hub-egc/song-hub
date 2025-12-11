@@ -70,6 +70,43 @@ def test_comment_update(test_database_poblated):
     # Actually, created_at is set on creation. updated_at is nullable=True.
     assert comment.updated_at is not None
 
+def test_update_comment_no_change(test_database_poblated):
+    """Test that updating a comment with same content does NOT update updated_at."""
+    from app.modules.dataset.repositories import DatasetCommentRepository
+    
+    repo = DatasetCommentRepository()
+    dataset, user = _get_first_dataset_and_user()
+    if not dataset or not user:
+        pytest.skip("No dataset or user seeded")
+
+    # Create comment using repo or model
+    comment = DatasetComment(dataset_id=dataset.id, user_id=user.id, content="Original")
+    db.session.add(comment)
+    db.session.commit()
+
+    # Ensure updated_at is None initially (or check current value)
+    assert comment.updated_at is None
+
+    # Call update with SAME content using the REPOSITORY method which has the logic
+    repo.update_comment(comment.id, "Original")
+
+    # Reload to be sure
+    db.session.expire(comment)
+    db.session.refresh(comment)
+
+    # Assert updated_at is STILL None
+    assert comment.updated_at is None
+
+    # Call update with NEW content
+    repo.update_comment(comment.id, "New")
+    
+    # Reload
+    db.session.expire(comment)
+    db.session.refresh(comment)
+
+    # Assert updated_at is NOW Set
+    assert comment.updated_at is not None
+
 def test_comment_soft_delete(test_database_poblated):
     """Test soft deletion logic."""
     dataset, user = _get_first_dataset_and_user()
