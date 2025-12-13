@@ -45,9 +45,7 @@ def login_user(driver, host, email="user1@example.com", password="1234"):
         wait_for_page_to_load(driver)
 
         # Wait explicitly for the email field to be present
-        email_field = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.NAME, "email"))
-        )
+        email_field = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "email")))
         password_field = driver.find_element(By.NAME, "password")
 
         email_field.clear()
@@ -76,19 +74,21 @@ def get_download_count_from_page(driver):
     """
     try:
         # Find the Downloads section
-        # The structure is: <span class="badge bg-primary"><i data-feather="download"></i> {{ dataset.download_count }}</span>
-        download_badge = driver.find_element(
-            By.XPATH, "//span[contains(text(), 'Downloads')]/following-sibling::div//span[@class='badge bg-primary']"
-        )
-        
+        # The structure is:
+        # <span class="badge bg-primary"><i data-feather="download"></i>
+        #   {{ dataset.download_count }}
+        # </span>
+        xpath = "//span[contains(text(), 'Downloads')]" "/following-sibling::div//span[@class='badge bg-primary']"
+        download_badge = driver.find_element(By.XPATH, xpath)
+
         # Get the text and extract the number (format is "<icon> 123")
         badge_text = download_badge.text.strip()
-        
+
         # The text might be just the number or have an icon before it
         # Try to extract the last part which should be the number
         parts = badge_text.split()
         count = int(parts[-1]) if parts else 0
-        
+
         return count
     except (NoSuchElementException, ValueError, IndexError):
         # If we can't find it with the first method, try alternative selector
@@ -97,11 +97,11 @@ def get_download_count_from_page(driver):
             downloads_row = driver.find_element(By.XPATH, "//span[contains(text(), 'Downloads')]/../..")
             badge = downloads_row.find_element(By.CLASS_NAME, "badge")
             badge_text = badge.text.strip()
-            
+
             # Extract number from text
             parts = badge_text.split()
             count = int(parts[-1]) if parts else 0
-            
+
             return count
         except (NoSuchElementException, ValueError, IndexError):
             raise Exception("Could not find download counter on page")
@@ -126,7 +126,8 @@ def test_download_counter_visible_on_dataset_detail():
             # Look for a dataset link in the table
             # Look for a dataset link in the table
             dataset_link = driver.find_element(
-                By.XPATH, "//table//tbody//tr[1]//a[contains(@href, '/doi/') or contains(@href, '/dataset/')]"
+                By.XPATH,
+                ("//table//tbody//tr[1]//a[contains(@href, '/doi/') " "or contains(@href, '/dataset/')]"),
             )
             dataset_url = dataset_link.get_attribute("href")
         except NoSuchElementException:
@@ -154,7 +155,6 @@ def test_download_counter_visible_on_dataset_detail():
         except Exception as e:
             print(f"Error closing driver: {e}")
         time.sleep(1)  # Small delay after closing driver
-
 
 
 def test_download_counter_increments_on_download():
@@ -194,9 +194,10 @@ def test_download_counter_increments_on_download():
         # The button has class "btn btn-primary" and href="/dataset/download/{dataset.id}"
         # The button has class "btn btn-primary" and href="/dataset/download/{dataset.id}"
         download_button = driver.find_element(
-            By.XPATH, "//a[contains(@href, '/dataset/download/') and contains(@class, 'btn-primary')]"
+            By.XPATH,
+            ("//a[contains(@href, '/dataset/download/') " "and contains(@class, 'btn-primary')]"),
         )
-        
+
         # Click the download button
         download_button.click()
         time.sleep(2)  # Wait for download to process
@@ -212,8 +213,9 @@ def test_download_counter_increments_on_download():
         print(f"Updated download count: {updated_count}")
 
         # Verify the counter incremented
-        assert updated_count == initial_count + 1, \
-            f"Download count should increment from {initial_count} to {initial_count + 1}, but got {updated_count}"
+        assert (
+            updated_count == initial_count + 1
+        ), f"Download count should increment from {initial_count} to {initial_count + 1}, but got {updated_count}"
 
         print("Test passed! Download counter incremented correctly.")
 
@@ -243,7 +245,8 @@ def test_download_counter_does_not_increment_on_repeated_download():
         # Find the first dataset
         try:
             dataset_link = driver.find_element(
-                By.XPATH, "//table//tbody//tr[1]//a[contains(@href, '/doi/') or contains(@href, '/dataset/')]"
+                By.XPATH,
+                ("//table//tbody//tr[1]//a[contains(@href, '/doi/') " "or contains(@href, '/dataset/')]"),
             )
             dataset_url = dataset_link.get_attribute("href")
         except NoSuchElementException:
@@ -256,7 +259,8 @@ def test_download_counter_does_not_increment_on_repeated_download():
 
         # First download
         download_button = driver.find_element(
-            By.XPATH, "//a[contains(@href, '/dataset/download/') and contains(@class, 'btn-primary')]"
+            By.XPATH,
+            ("//a[contains(@href, '/dataset/download/') " "and contains(@class, 'btn-primary')]"),
         )
         download_button.click()
         time.sleep(2)
@@ -266,7 +270,7 @@ def test_download_counter_does_not_increment_on_repeated_download():
         driver.get(dataset_url)
         wait_for_page_to_load(driver)
         time.sleep(1)
-        
+
         count_after_first = get_download_count_from_page(driver)
         print(f"Count after first download: {count_after_first}")
 
@@ -282,7 +286,7 @@ def test_download_counter_does_not_increment_on_repeated_download():
         driver.get(dataset_url)
         wait_for_page_to_load(driver)
         time.sleep(1)
-        
+
         count_after_second = get_download_count_from_page(driver)
         print(f"Count after second download: {count_after_second}")
 
@@ -331,11 +335,11 @@ def test_download_counter_in_trending_section():
         try:
             # Use a more flexible selector - find any download link
             download_link = driver.find_element(By.XPATH, "//a[contains(@href, '/dataset/download/')]")
-            
+
             # Scroll the element into view before clicking
             driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", download_link)
             time.sleep(1)  # Wait for scroll to complete
-            
+
             download_link.click()
             time.sleep(2)
             wait_for_page_to_load(driver)
@@ -355,9 +359,10 @@ def test_download_counter_in_trending_section():
 
         # Verify it incremented or stayed the same (depending on trending logic)
         # Note: Trending section may filter by time period, so the download might not appear immediately
-        assert updated_trending_count >= initial_trending_count, \
-            f"Trending download count should not decrease (was {initial_trending_count}, now {updated_trending_count})"
-        
+        assert (
+            updated_trending_count >= initial_trending_count
+        ), f"Trending download count should not decrease (was {initial_trending_count}, now {updated_trending_count})"
+
         if updated_trending_count == initial_trending_count:
             print("Note: Trending counter did not increment (may be due to time-based filtering or repeated download)")
         else:

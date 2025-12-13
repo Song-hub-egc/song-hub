@@ -12,6 +12,7 @@ Run from project root:
 """
 
 from locust import HttpUser, TaskSet, between, task
+
 from core.environment.host import get_host_for_locust_testing
 from core.locust.common import get_csrf_token
 
@@ -113,6 +114,7 @@ class DownloadCounterUser(HttpUser):
     - host: Automatically set based on environment
     - tasks: Uses DownloadCounterBehavior task set
     """
+
     wait_time = between(1, 3)  # Wait 1-3 seconds between tasks
     host = get_host_for_locust_testing()
     tasks = [DownloadCounterBehavior]
@@ -121,6 +123,7 @@ class DownloadCounterUser(HttpUser):
 # Legacy behavior for backward compatibility
 class DatasetBehavior(TaskSet):
     """Legacy dataset behavior (kept for compatibility)."""
+
     @task
     def trending_home(self):
         self.client.get("/", name="trending_home")
@@ -128,6 +131,7 @@ class DatasetBehavior(TaskSet):
 
 class DatasetUser(HttpUser):
     """Legacy dataset user (kept for compatibility)."""
+
     wait_time = between(5, 9)
     host = get_host_for_locust_testing()
     tasks = [DatasetBehavior]

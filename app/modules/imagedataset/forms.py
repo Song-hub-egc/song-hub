@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import FieldList, FormField, StringField, validators, HiddenField
+from wtforms import FieldList, FormField, HiddenField, StringField, validators
+
 from app.modules.dataset.forms import BaseDataSetForm
 
 

@@ -1,16 +1,15 @@
 from sqlalchemy import Enum as SQLAlchemyEnum
 
 from app import db
-
-from app.modules.dataset.models import Author, PublicationType, DataSet
+from app.modules.dataset.models import Author, DataSet, PublicationType
 
 
 class UVLDataset(DataSet):
-    id = db.Column(db.Integer, db.ForeignKey('data_set.id'), primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey("data_set.id"), primary_key=True)
     feature_models = db.relationship("FeatureModel", backref="uvl_dataset", lazy=True, cascade="all, delete")
 
     __mapper_args__ = {
-        'polymorphic_identity': 'uvl_dataset',
+        "polymorphic_identity": "uvl_dataset",
     }
 
     def files(self):

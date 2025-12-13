@@ -21,7 +21,7 @@ class FeatureModelForm(FlaskForm):
     authors = FieldList(FormField(AuthorForm))
 
     class Meta:
-        csrf = False 
+        csrf = False
 
     def get_authors(self):
         return [author.get_author() for author in self.authors]
