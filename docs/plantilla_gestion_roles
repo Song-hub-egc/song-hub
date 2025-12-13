@@ -1,0 +1,79 @@
+# Organización del Trabajo en el Grupo
+
+En nuestro equipo, la **organización y asignación clara de tareas** es crucial para que el proyecto avance de manera eficiente. Cada miembro se encarga de una tarea específica que se discute y se coordina a través de **WhatsApp**. A continuación, te explicamos cómo nos organizamos, cómo asignamos las tareas y cómo nos comunicamos.
+
+## Distribución de Roles y Responsabilidades
+
+Cada miembro del equipo tiene asignado una tarea se responsabiliza de esa tarea determinada. Las tareas se definen en las **issues** y cada uno trabaja en su tarea según la prioridad establecida. Los roles y responsabilidades son los siguientes:
+
+### Roles del Equipo
+1. **Jefe de Proyecto**:
+   - Coordina las tareas generales del proyecto y se asegura de que el proyecto se mantenga dentro de los plazos.
+   - Se encarga de la comunicación con el patrocinador y la gestión de las reuniones del equipo.
+
+Todos los integrantes del grupo, incluyendo el Jefe del Proyecto tienen tanto el rol desarrollador como tester, ya que desarrollan y prueban cada uno su tarea asignada previamente por el equipo.
+
+2. **Desarrolladores**:
+   - Se encargan de implementar las funcionalidades y corregir los errores que surjan.
+   - Trabajan en sus tareas asignadas en los **issues**, asegurándose de que todo el código cumpla con los estándares y requisitos del proyecto.
+
+3. **Tester**:
+   - Realiza las pruebas para verificar que las funcionalidades desarrolladas funcionan correctamente y cumplen con los requisitos.
+   - Reporta cualquier error para que los desarrolladores puedan corregirlo.
+
+
+## Organización del Trabajo
+
+### 1. **Asignación de Tareas en los Issues**
+Las tareas se asignan mediante **issues** creados en la plataforma de gestión (como GitHub o GitLab). Cada issue contiene la descripción de la tarea, los requisitos, y las personas responsables de realizarla.
+
+**Proceso de asignación**:
+- **Creación de Issues**: Cada integrante del equipo crea su **issue** con las tarea a implementar.
+- **Asignación**: Cada miembro del equipo se asigna su tarea.
+- **Prioridades**: Las tareas se priorizan según la urgencia y la importancia para el proyecto.
+
+### 2. **Comunicación y Coordinación a través de WhatsApp**
+La **comunicación en tiempo real** se maneja principalmente a través de **WhatsApp**. En el grupo de WhatsApp del equipo, discutimos detalles sobre cada tarea, aclaramos dudas y coordinamos los pasos a seguir.
+
+**Cómo funciona**:
+- Cada miembro informa cuando empieza y termina una tarea.
+- Si surge algún bloqueo o duda durante el trabajo, se consulta rápidamente por WhatsApp.
+- El Jefe de Proyecto organiza reuniones rápidas o da instrucciones a través del grupo si es necesario.
+
+### 3. **Desarrollo y Ejecución de las Tareas**
+Una vez que se asigna una tarea, el miembro encargado comienza a trabajar en ella. Este proceso incluye:
+- **Desarrollo de la tarea**: Cada miembro realiza su trabajo según lo descrito en la **issue**.
+- **Pruebas de la tarea**: Cada miembro es responsable de probar su propia tarea para asegurarse de que funciona correctamente. Si la tarea requiere pruebas adicionales, el **tester/QA** las realizará.
+  
+**Pruebas de la tarea**:
+- Las pruebas se realizan para verificar que la funcionalidad se comporta como se espera.
+- Si se encuentran errores, el desarrollador realiza las correcciones necesarias y vuelve a probar la tarea.
+  
+### 4. **Revisión y Merge de las Tareas**
+Una vez que una tarea está completa, se **revisa** por otros miembros del equipo. La revisión se hace a través de:
+- **Feedback**: Si se detectan errores o mejoras, el código se ajusta y se vuelve a revisar.
+
+### 5. **Manejo de Errores**
+Si durante el desarrollo de una tarea se encuentran errores, se gestionan de la siguiente manera:
+- **Bugfix**: Si un error se detecta en una funcionalidad ya desarrollada, se crea una rama **bugfix**.
+- **Revisión en WhatsApp**: Si el error es crítico, se discute rápidamente por WhatsApp para coordinar la corrección.
+- **Pruebas adicionales**: Después de la corrección, se realizan más pruebas para asegurar que el error se haya resuelto sin generar nuevos problemas.
+
+## Herramientas Utilizadas
+
+Para que todo el equipo trabaje de manera organizada, utilizamos varias herramientas:
+
+1. **GitHub/GitLab**: Para la gestión de tareas, control de versiones y **issues**.
+2. **WhatsApp**: Para la comunicación rápida y la coordinación diaria.
+3. **VSCode**: Para el desarrollo del código.
+
+
+## Resumen
+
+En resumen, nos organizamos de la siguiente manera:
+- **Tareas asignadas a través de issues** en GitHub/GitLab.
+- **Comunicación en tiempo real** mediante WhatsApp.
+- **Desarrollo autónomo** de las tareas, con pruebas y revisiones constantes.
+- **Manejo de errores** de manera colaborativa y rápida.
+  
+Gracias a esta estructura, podemos trabajar de manera eficiente, con una distribución clara de tareas y una comunicación fluida. Esto nos permite avanzar rápidamente y solucionar problemas de forma efectiva.

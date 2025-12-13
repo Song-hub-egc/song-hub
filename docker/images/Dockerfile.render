@@ -21,6 +21,9 @@ WORKDIR /app
 COPY app/ ./app
 COPY core/ ./core
 COPY migrations/ ./migrations
+# WSGI entrypoint and utilities
+COPY wsgi.py ./wsgi.py
+COPY common.py ./common.py
 
 # Copy requirements.txt into the working directory /app
 COPY requirements.txt .

@@ -1,0 +1,87 @@
+#!/bin/sh
+# Hook pre-commit: arregla automáticamente TODO el código Python antes de bloquear el commit (incluye tests u otros archivos no staged).
+
+set -e
+
+TARGET_DIRS=${HOOK_TARGETS:-"app rosemary core"}
+
+# Normalizamos la lista de rutas existentes para evitar errores en find
+DIRS_FOUND=""
+for dir in $TARGET_DIRS; do
+    if [ -d "$dir" ]; then
+        DIRS_FOUND="$DIRS_FOUND $dir"
+    fi
+done
+
+if [ -z "$DIRS_FOUND" ]; then
+    echo "No se encontraron directorios objetivo para formatear."
+    exit 0
+fi
+
+# Guardamos qué archivos estaban staged antes de modificar nada para re-staggearlos después
+STAGED_TMP=$(mktemp)
+trap 'rm -f "$STAGED_TMP"' EXIT
+git diff --cached --name-only --diff-filter=ACM -z -- '*.py' >"$STAGED_TMP" || true
+
+run_tool() {
+    tool="$1"
+    shift
+    msg="$1"
+    shift
+
+    if command -v "$tool" >/dev/null 2>&1; then
+        echo "$msg"
+        find $DIRS_FOUND -type f -name '*.py' -exec "$tool" "$@" {} + || {
+            echo "Error al ejecutar $tool. Commit abortado." >&2
+            exit 1
+        }
+    else
+        echo "$tool no encontrado en el PATH; omitiendo." >&2
+    fi
+}
+
+# Intentamos arreglar automáticamente antes de lintar
+run_tool autoflake "Eliminando importaciones no utilizadas con autoflake..." \
+    --in-place --remove-all-unused-imports --ignore-init-module-imports
+
+run_tool isort "Ordenando importaciones con isort..." \
+    --line-length 120 --
+
+run_tool black "Formateando con black..." \
+    --line-length 120 --
+
+echo "Corrigiendo espacios en blanco finales..."
+find $DIRS_FOUND -type f -name '*.py' -print0 | while IFS= read -r -d '' file; do
+    python3 - "$file" <<'PY'
+import pathlib, sys
+
+path = pathlib.Path(sys.argv[1])
+text = path.read_text()
+fixed = "\n".join(line.rstrip() for line in text.splitlines())
+# Conserva salto final si existía
+if text.endswith("\n"):
+    fixed += "\n"
+
+if fixed != text:
+    path.write_text(fixed)
+PY
+done
+
+# Re-staggeamos solo lo que ya estaba staged, para no añadir archivos inesperados al commit
+if [ -s "$STAGED_TMP" ]; then
+    xargs -0 git add <"$STAGED_TMP"
+fi
+
+# Lint final: si aún hay errores que no podemos corregir automáticamente, se aborta el commit.
+if command -v flake8 >/dev/null 2>&1; then
+    echo "Ejecutando flake8..."
+    find $DIRS_FOUND -type f -name '*.py' -exec flake8 --max-line-length 120 --extend-ignore E203,W503 {} + || {
+        echo "Flake8 encontró errores que no se pudieron corregir automáticamente. Commit abortado." >&2
+        exit 1
+    }
+else
+    echo "flake8 no encontrado en el PATH; omitiendo flake8." >&2
+fi
+
+echo "✅ Formato corregido y lint superado en todo el proyecto objetivo."
+exit 0

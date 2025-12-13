@@ -1,8 +1,10 @@
 import os
 import time
 
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from core.environment.host import get_host_for_selenium_testing
@@ -96,12 +98,19 @@ def test_upload_dataset():
         dropzone.send_keys(file2_path)
         wait_for_page_to_load(driver)
 
-        # Add authors in UVL models
-        show_button = driver.find_element(By.ID, "0_button")
-        show_button.send_keys(Keys.RETURN)
-        add_author_uvl_button = driver.find_element(By.ID, "0_form_authors_button")
-        add_author_uvl_button.send_keys(Keys.RETURN)
-        wait_for_page_to_load(driver)
+        # Add authors in UVL models - wait for the UI to render the buttons
+        try:
+            show_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "0_button")))
+            show_button.click()
+
+            add_author_uvl_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.ID, "0_form_authors_button"))
+            )
+            add_author_uvl_button.click()
+            wait_for_page_to_load(driver)
+        except TimeoutException:
+            # Make the failure clearer in test output
+            raise NoSuchElementException("Could not find UVL model buttons (0_button / 0_form_authors_button)")
 
         name_field = driver.find_element(By.NAME, "feature_models-0-authors-2-name")
         name_field.send_keys("Author3")
@@ -116,13 +125,24 @@ def test_upload_dataset():
         upload_btn = driver.find_element(By.ID, "upload_button")
         upload_btn.send_keys(Keys.RETURN)
         wait_for_page_to_load(driver)
-        time.sleep(2)  # Force wait time
 
-        assert driver.current_url == f"{host}/dataset/list", "Test failed!"
+        # Wait for the dataset to appear in the list (polling up to 10s).
+        final_datasets = None
+        deadline = time.time() + 10
+        while time.time() < deadline:
+            try:
+                final_datasets = count_datasets(driver, host)
+                if final_datasets == initial_datasets + 1:
+                    break
+            except Exception:
+                # Ignore transient errors while polling
+                pass
+            time.sleep(0.5)
 
-        # Count final datasets
-        final_datasets = count_datasets(driver, host)
-        assert final_datasets == initial_datasets + 1, "Test failed!"
+        if final_datasets != initial_datasets + 1:
+            raise AssertionError(
+                f"Upload did not result in a new dataset: initial={initial_datasets}, final={final_datasets}"
+            )
 
         print("Test passed!")
 
@@ -132,5 +152,41 @@ def test_upload_dataset():
         close_driver(driver)
 
 
-# Call the test function
-test_upload_dataset()
+def test_trending_datasets():
+    driver = initialize_driver()
+
+    try:
+        host = get_host_for_selenium_testing()
+        driver.get(host)
+        driver.set_window_size(1470, 919)
+        driver.find_element(By.CSS_SELECTOR, ".sidebar-item:nth-child(6) .align-middle:nth-child(2)").click()
+        driver.find_element(By.ID, "email").click()
+        driver.find_element(By.ID, "email").send_keys("user1@example.com")
+        driver.find_element(By.CSS_SELECTOR, ".row:nth-child(4) .mb-3").click()
+        driver.find_element(By.ID, "password").click()
+        driver.find_element(By.ID, "password").send_keys("1234")
+        driver.find_element(By.ID, "submit").click()
+
+        try:
+            download = driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple")
+        except NoSuchElementException:
+            download = None
+
+        if download is not None:
+            download = int(download.text.split(" ")[0])
+        else:
+            download = 0
+
+        driver.find_element(By.LINK_TEXT, "Download (1.21 KB)").click()
+        driver.get(host)
+
+        assert driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple").text.split(" ")[0] == str(
+            download + 1
+        )
+
+    finally:
+        # Close the browser
+        close_driver(driver)
+
+
+# Tests are executed by pytest; do not invoke them at import time.

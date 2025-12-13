@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Hook commit-msg para validar el formato de los mensajes de commit
+# Se ejecuta automáticamente durante un `git commit`
+
+# Obtener el mensaje del commit
+commit_msg=$(cat "$1")
+
+# Ignorar ciertos tipos de commits automáticos
+case "$commit_msg" in
+  Merge\ *|Revert\ *|Pull\ *|fixup\!*|squash\!*)
+    exit 0
+    ;;
+esac
+
+# Expresión regular para el formato esperado en los mensajes
+commit_regex='^(feat|fix|docs|style|refactor|test|chore)(\([a-z0-9_-]+\))?: .{10,}$'
+
+# Comprobar si el mensaje de commit cumple con el formato
+if echo "$commit_msg" | grep -Eq "$commit_regex"; then
+    echo "✅ ¡El mensaje de commit es válido!"
+else
+    echo "❌ El mensaje de commit no es válido."
+    echo "El formato debe ser: tipo(alcance): descripción"
+    exit 1
+fi

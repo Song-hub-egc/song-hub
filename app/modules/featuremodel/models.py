@@ -1,7 +1,25 @@
 from sqlalchemy import Enum as SQLAlchemyEnum
 
 from app import db
-from app.modules.dataset.models import Author, PublicationType
+from app.modules.dataset.models import Author, DataSet, PublicationType
+
+
+class UVLDataset(DataSet):
+    id = db.Column(db.Integer, db.ForeignKey("data_set.id"), primary_key=True)
+    feature_models = db.relationship("FeatureModel", backref="uvl_dataset", lazy=True, cascade="all, delete")
+
+    __mapper_args__ = {
+        "polymorphic_identity": "uvl_dataset",
+    }
+
+    def files(self):
+        return [file for fm in self.feature_models for file in fm.files]
+
+    def get_files_count(self):
+        return sum(len(fm.files) for fm in self.feature_models)
+
+    def get_file_total_size(self):
+        return sum(file.size for fm in self.feature_models for file in fm.files)
 
 
 class FeatureModel(db.Model):

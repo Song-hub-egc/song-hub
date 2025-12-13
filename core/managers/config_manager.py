@@ -34,7 +34,7 @@ class Config:
     TIMEZONE = "Europe/Madrid"
     TEMPLATES_AUTO_RELOAD = True
     UPLOAD_FOLDER = "uploads"
-    
+
     SESSION_TYPE = "sqlalchemy"
     SESSION_PERMANENT = False
     SESSION_USE_SIGNER = True
@@ -49,14 +49,10 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = (
-        f"mysql+pymysql://{os.getenv('MARIADB_USER', 'default_user')}:"
-        f"{os.getenv('MARIADB_PASSWORD', 'default_password')}@"
-        f"{os.getenv('MARIADB_HOSTNAME', 'localhost')}:"
-        f"{os.getenv('MARIADB_PORT', '3306')}/"
-        f"{os.getenv('MARIADB_TEST_DATABASE', 'default_db')}"
-    )
+    # Use an in-memory SQLite database for tests to avoid file permission issues
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
+    SERVER_NAME = "localhost"
 
 
 class ProductionConfig(Config):

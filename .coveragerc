@@ -1,0 +1,7 @@
+[run]
+omit =
+    */tests/*
+    */locustfile.py
+    /venv/*
+    /.venv/*
+    manage.py

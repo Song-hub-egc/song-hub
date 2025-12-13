@@ -2,7 +2,7 @@ import os
 import uuid
 from datetime import datetime, timezone
 
-from flask import current_app, jsonify, make_response, request, send_from_directory
+from flask import jsonify, make_response, request, send_from_directory
 from flask_login import current_user
 
 from app import db
@@ -13,12 +13,15 @@ from app.modules.hubfile.services import HubfileDownloadRecordService, HubfileSe
 
 @hubfile_bp.route("/file/download/<int:file_id>", methods=["GET"])
 def download_file(file_id):
-    file = HubfileService().get_or_404(file_id)
-    filename = file.name
+    hubfile_service = HubfileService()
+    file = hubfile_service.get_or_404(file_id)
+    file_path = hubfile_service.get_path_by_hubfile(file)
 
-    directory_path = f"uploads/user_{file.feature_model.data_set.user_id}/dataset_{file.feature_model.data_set_id}/"
-    parent_directory_path = os.path.dirname(current_app.root_path)
-    file_path = os.path.join(parent_directory_path, directory_path)
+    if not file_path or not os.path.exists(file_path):
+        return jsonify({"message": "File not found"}), 404
+
+    filename = os.path.basename(file_path)
+    directory_path = os.path.dirname(file_path)
 
     # Get the cookie from the request or generate a new one if it does not exist
     user_cookie = request.cookies.get("file_download_cookie")
@@ -40,7 +43,7 @@ def download_file(file_id):
         )
 
     # Save the cookie to the user's browser
-    resp = make_response(send_from_directory(directory=file_path, path=filename, as_attachment=True))
+    resp = make_response(send_from_directory(directory=directory_path, path=filename, as_attachment=True))
     resp.set_cookie("file_download_cookie", user_cookie)
 
     return resp
@@ -48,16 +51,21 @@ def download_file(file_id):
 
 @hubfile_bp.route("/file/view/<int:file_id>", methods=["GET"])
 def view_file(file_id):
-    file = HubfileService().get_or_404(file_id)
-    filename = file.name
-
-    directory_path = f"uploads/user_{file.feature_model.data_set.user_id}/dataset_{file.feature_model.data_set_id}/"
-    parent_directory_path = os.path.dirname(current_app.root_path)
-    file_path = os.path.join(parent_directory_path, directory_path, filename)
+    hubfile_service = HubfileService()
+    file = hubfile_service.get_or_404(file_id)
+    absolute_path = hubfile_service.get_path_by_hubfile(file)
 
     try:
-        if os.path.exists(file_path):
-            with open(file_path, "r") as f:
+        if absolute_path and os.path.exists(absolute_path):
+            _, ext = os.path.splitext(absolute_path)
+            filename = os.path.basename(absolute_path)
+            directory_path = os.path.dirname(absolute_path)
+
+            # For non-text files (e.g., images) stream the file; for text/uvl return content as before.
+            if ext.lower() not in {".uvl", ".txt"}:
+                return send_from_directory(directory_path, filename)
+
+            with open(absolute_path, "r") as f:
                 content = f.read()
 
             user_cookie = request.cookies.get("view_cookie")

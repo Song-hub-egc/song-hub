@@ -2,7 +2,7 @@ import base64
 import io
 import json
 import secrets
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pyotp
 import qrcode
@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
 
     email = db.Column(db.String(256), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.utcnow())
 
     two_factor_secret = db.Column(db.String(32), nullable=True)
     two_factor_enabled = db.Column(db.Boolean, default=False, nullable=False)
@@ -52,10 +52,7 @@ class User(db.Model, UserMixin):
     def get_totp_uri(self) -> str:
         if not self.two_factor_secret:
             return ""
-        return pyotp.totp.TOTP(self.two_factor_secret).provisioning_uri(
-            name=self.email,
-            issuer_name="UVLHUB.IO"
-        )
+        return pyotp.totp.TOTP(self.two_factor_secret).provisioning_uri(name=self.email, issuer_name="UVLHUB.IO")
 
     def verify_totp(self, token: str, check_enabled: bool = True) -> bool:
         if not self.two_factor_secret:
@@ -98,7 +95,8 @@ class User(db.Model, UserMixin):
         img.save(buffered, format="PNG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
         return f"data:image/png;base64,{img_str}"
-    
+
+
 class UserSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -109,8 +107,8 @@ class UserSession(db.Model):
     browser = db.Column(db.String(100), nullable=True)
     os = db.Column(db.String(100), nullable=True)
     location = db.Column(db.String(200), nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    last_activity = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.utcnow())
+    last_activity = db.Column(db.DateTime, nullable=False, default=lambda: datetime.utcnow())
     is_current = db.Column(db.Boolean, default=False, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=True)
 
@@ -118,9 +116,10 @@ class UserSession(db.Model):
 
     def parse_user_agent(self, user_agent_string):
         from user_agents import parse
+
         user_agent = parse(user_agent_string)
 
-        self.device_type = 'mobile' if user_agent.is_mobile else 'tablet' if user_agent.is_tablet else 'desktop'
+        self.device_type = "mobile" if user_agent.is_mobile else "tablet" if user_agent.is_tablet else "desktop"
         self.browser = user_agent.browser.family
         self.os = user_agent.os.family
         self.user_agent = user_agent_string
@@ -128,21 +127,20 @@ class UserSession(db.Model):
     def is_expired(self):
         if not self.expires_at:
             return False
-        return datetime.now(timezone.utc) > self.expires_at
+        return datetime.utcnow() > self.expires_at
 
     def update_activity(self):
-        self.last_activity = datetime.now(timezone.utc)
+        self.last_activity = datetime.utcnow()
 
     def get_device_icon(self):
-        if self.device_type == 'mobile':
-            return 'fa-mobile'
-        elif self.device_type == 'tablet':
-            return 'fa-tablet'
-        return 'fa-laptop'
+        if self.device_type == "mobile":
+            return "fa-mobile"
+        elif self.device_type == "tablet":
+            return "fa-tablet"
+        return "fa-laptop"
 
     def get_time_since_activity(self):
-        from datetime import datetime, timezone
-        delta = datetime.now(timezone.utc) - self.last_activity
+        delta = datetime.utcnow() - self.last_activity
         if delta.total_seconds() < 60:
             return "Just now"
         elif delta.total_seconds() < 3600:

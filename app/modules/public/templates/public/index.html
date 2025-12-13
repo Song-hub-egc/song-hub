@@ -54,8 +54,13 @@
                             </a>
                         </h5>
                         <p class="text-muted small mb-3">by {{ item.main_author }}</p>
-                        <div class="trending-downloads-badge-simple">
+                        <div class="trending-downloads-badge-simple mb-2">
                             {{ item.downloads }} downloads
+                        </div>
+                        <div class="text-muted small">
+                            <i data-feather="eye" style="width: 14px; height: 14px;"></i> {{ item.views }} views
+                            <span class="mx-2">|</span>
+                            <strong>{{ item.total_activity }} total</strong>
                         </div>
                     </div>
                 </div>
