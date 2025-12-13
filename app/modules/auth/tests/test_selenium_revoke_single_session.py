@@ -2,6 +2,8 @@ import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from core.environment.host import get_host_for_selenium_testing
 from core.selenium.common import close_driver, initialize_driver
@@ -52,6 +54,16 @@ def test_revoke_single_session():
                 # Click the first revoke button (for another session)
                 print("Revoking a session...")
                 revoke_buttons[0].click()
+                time.sleep(1)
+
+                # Handle any alert
+                try:
+                    alert = WebDriverWait(driver1, 5).until(EC.alert_is_present())
+                    alert.accept()
+                    print("Alert handled")
+                except Exception as e:
+                    print(f"No alert found or alert handling failed: {e}")
+
                 time.sleep(2)
 
                 # Wait for page reload

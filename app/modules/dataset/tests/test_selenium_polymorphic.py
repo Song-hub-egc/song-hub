@@ -41,11 +41,13 @@ def test_uvl_upload_flow(test_database_poblated):
         # 2. Go to Upload
         driver.get(f"{host}/dataset/upload")
         wait_for_page_to_load(driver)
+        time.sleep(2)
 
         # 3. Fill Basic Info
         # 3. Fill Basic Info
         try:
-            driver.find_element(By.NAME, "title").send_keys("Selenium UVL Dataset")
+            title_field = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "title")))
+            title_field.send_keys("Selenium UVL Dataset")
         except NoSuchElementException:
             print(f"Failed to find title field. URL: {driver.current_url}")
             raise
@@ -57,12 +59,15 @@ def test_uvl_upload_flow(test_database_poblated):
         file_path = os.path.abspath("app/modules/dataset/uvl_examples/file1.uvl")
         dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
         dropzone.send_keys(file_path)
+        wait_for_page_to_load(driver)
+        time.sleep(3)  # Additional wait for Dropzone to process the file
 
         # 5. Wait for UVL dynamic form (checking 0_button)
         try:
-            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "0_button")))
+            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "0_button")))
         except TimeoutException:
-            print(driver.page_source)
+            print(f"Failed to find 0_button. URL: {driver.current_url}")
+            print(f"Page source snippet: {driver.page_source[:500]}")
             raise AssertionError("UVL file upload failed or Dynamic form not rendered.")
 
         # 6. Check Disclaimer & Submit
