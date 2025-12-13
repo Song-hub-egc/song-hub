@@ -5,8 +5,8 @@ from app.modules.auth import auth_bp
 from app.modules.auth.forms import LoginForm, SignupForm, TwoFactorVerifyForm
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.services import AuthenticationService, SessionService
-from app.modules.profile.services import UserProfileService
 from app.modules.cart.services import CartService
+from app.modules.profile.services import UserProfileService
 
 authentication_service = AuthenticationService()
 user_profile_service = UserProfileService()
@@ -106,7 +106,7 @@ def verify_two_factor():
         if authentication_service.verify_two_factor_token(user, form.token.data, is_backup):
             remember = session.get("remember_me", False)
             session.pop("pending_2fa_user_id", None)
-            session.pop('remember_me', None)
+            session.pop("remember_me", None)
             login_user(user, remember=remember)
             # Merge session cart into user cart
             cart_service.merge_session_cart_on_login(user.id)
