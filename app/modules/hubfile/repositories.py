@@ -40,7 +40,15 @@ class HubfileRepository(BaseRepository):
             return db.session.query(DataSet).join(FeatureModel).join(Hubfile).filter(Hubfile.id == hubfile.id).first()
         elif hubfile.image_id:
             from app.modules.imagedataset.models import Image, ImageDataset
-            return db.session.query(DataSet).join(ImageDataset).join(Image).join(Hubfile).filter(Hubfile.id == hubfile.id).first()
+
+            return (
+                db.session.query(DataSet)
+                .join(ImageDataset)
+                .join(Image)
+                .join(Hubfile)
+                .filter(Hubfile.id == hubfile.id)
+                .first()
+            )
         return None
 
 

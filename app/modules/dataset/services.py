@@ -63,7 +63,6 @@ class DataSetService(BaseService):
                 uvl_filename = feature_model.fm_meta_data.uvl_filename
                 shutil.move(os.path.join(source_dir, uvl_filename), dest_dir)
 
-
     def get_synchronized(self, current_user_id: int) -> DataSet:
         return self.repository.get_synchronized(current_user_id)
 
@@ -156,7 +155,9 @@ class DataSetService(BaseService):
                     uvl_filename = feature_model.uvl_filename.data
                     fmmetadata = self.fmmetadata_repository.create(commit=False, **feature_model.get_fmmetadata())
                     for author_data in feature_model.get_authors():
-                        author = self.author_repository.create(commit=False, fm_meta_data_id=fmmetadata.id, **author_data)
+                        author = self.author_repository.create(
+                            commit=False, fm_meta_data_id=fmmetadata.id, **author_data
+                        )
                         fmmetadata.authors.append(author)
 
                     fm = self.feature_model_repository.create(
@@ -175,7 +176,7 @@ class DataSetService(BaseService):
             elif hasattr(form, "images"):
                 from app.modules.imagedataset.models import Image, ImageMetaData
                 from app.modules.dataset.models import PublicationType
-                
+
                 for image_form in form.images:
                     filename = image_form.filename.data
                     # Create generic metadata for image (reusing what we can or creating new)
@@ -183,18 +184,18 @@ class DataSetService(BaseService):
                         filename=filename,
                         title=image_form.title.data,
                         description=image_form.desc.data,
-                        publication_type=PublicationType.NONE, # Defaulting for now
+                        publication_type=PublicationType.NONE,  # Defaulting for now
                         tags="",
                         publication_doi=""
                     )
-                    
+
                     # Add main author to image metadata as well for now
                     author = self.author_repository.create(commit=False, image_meta_data_id=None, **main_author)
                     image_metadata.authors.append(author)
-                    
+
                     self.repository.session.add(image_metadata)
-                    self.repository.session.flush() # to get ID
-                    
+                    self.repository.session.flush()  # to get ID
+
                     # Fix author FK
                     author.image_meta_data_id = image_metadata.id
 
@@ -210,12 +211,17 @@ class DataSetService(BaseService):
                         # Hubfile creation - note we need to pass image_id
                         # HubfileRepository might need update to accept image_id or we create manually
                         file = self.hubfilerepository.create(
-                            commit=False, name=filename, checksum=checksum, size=size, image_id=image.id, feature_model_id=None
+                            commit=False,
+                            name=filename,
+                            checksum=checksum,
+                            size=size,
+                            image_id=image.id,
+                            feature_model_id=None
                         )
                         image.files.append(file)
                     else:
                         logger.warning(f"File {filename} not found in temp folder")
-                        
+
             self.repository.session.commit()
 
         except Exception as exc:

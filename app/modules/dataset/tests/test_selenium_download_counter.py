@@ -77,7 +77,9 @@ def get_download_count_from_page(driver):
     try:
         # Find the Downloads section
         # The structure is: <span class="badge bg-primary"><i data-feather="download"></i> {{ dataset.download_count }}</span>
-        download_badge = driver.find_element(By.XPATH, "//span[contains(text(), 'Downloads')]/following-sibling::div//span[@class='badge bg-primary']")
+        download_badge = driver.find_element(
+            By.XPATH, "//span[contains(text(), 'Downloads')]/following-sibling::div//span[@class='badge bg-primary']"
+        )
         
         # Get the text and extract the number (format is "<icon> 123")
         badge_text = download_badge.text.strip()
@@ -122,7 +124,10 @@ def test_download_counter_visible_on_dataset_detail():
         # Find the first dataset link
         try:
             # Look for a dataset link in the table
-            dataset_link = driver.find_element(By.XPATH, "//table//tbody//tr[1]//a[contains(@href, '/doi/') or contains(@href, '/dataset/')]")
+            # Look for a dataset link in the table
+            dataset_link = driver.find_element(
+                By.XPATH, "//table//tbody//tr[1]//a[contains(@href, '/doi/') or contains(@href, '/dataset/')]"
+            )
             dataset_url = dataset_link.get_attribute("href")
         except NoSuchElementException:
             print("No datasets found in the list, skipping test")
@@ -168,7 +173,9 @@ def test_download_counter_increments_on_download():
 
         # Find the first dataset
         try:
-            dataset_link = driver.find_element(By.XPATH, "//table//tbody//tr[1]//a[contains(@href, '/doi/') or contains(@href, '/dataset/')]")
+            dataset_link = driver.find_element(
+                By.XPATH, "//table//tbody//tr[1]//a[contains(@href, '/doi/') or contains(@href, '/dataset/')]"
+            )
             dataset_url = dataset_link.get_attribute("href")
         except NoSuchElementException:
             print("No datasets found in the list, skipping test")
@@ -185,8 +192,10 @@ def test_download_counter_increments_on_download():
 
         # Find and click the download button
         # The button has class "btn btn-primary" and href="/dataset/download/{dataset.id}"
-        download_button = driver.find_element(By.XPATH, "//a[contains(@href, '/dataset/download/') and contains(@class, 'btn-primary')]")
-        download_url = download_button.get_attribute("href")
+        # The button has class "btn btn-primary" and href="/dataset/download/{dataset.id}"
+        download_button = driver.find_element(
+            By.XPATH, "//a[contains(@href, '/dataset/download/') and contains(@class, 'btn-primary')]"
+        )
         
         # Click the download button
         download_button.click()
@@ -233,7 +242,9 @@ def test_download_counter_does_not_increment_on_repeated_download():
 
         # Find the first dataset
         try:
-            dataset_link = driver.find_element(By.XPATH, "//table//tbody//tr[1]//a[contains(@href, '/doi/') or contains(@href, '/dataset/')]")
+            dataset_link = driver.find_element(
+                By.XPATH, "//table//tbody//tr[1]//a[contains(@href, '/doi/') or contains(@href, '/dataset/')]"
+            )
             dataset_url = dataset_link.get_attribute("href")
         except NoSuchElementException:
             print("No datasets found in the list, skipping test")
@@ -244,7 +255,9 @@ def test_download_counter_does_not_increment_on_repeated_download():
         wait_for_page_to_load(driver)
 
         # First download
-        download_button = driver.find_element(By.XPATH, "//a[contains(@href, '/dataset/download/') and contains(@class, 'btn-primary')]")
+        download_button = driver.find_element(
+            By.XPATH, "//a[contains(@href, '/dataset/download/') and contains(@class, 'btn-primary')]"
+        )
         download_button.click()
         time.sleep(2)
         wait_for_page_to_load(driver)
@@ -258,7 +271,9 @@ def test_download_counter_does_not_increment_on_repeated_download():
         print(f"Count after first download: {count_after_first}")
 
         # Second download (same user/session)
-        download_button = driver.find_element(By.XPATH, "//a[contains(@href, '/dataset/download/') and contains(@class, 'btn-primary')]")
+        download_button = driver.find_element(
+            By.XPATH, "//a[contains(@href, '/dataset/download/') and contains(@class, 'btn-primary')]"
+        )
         download_button.click()
         time.sleep(2)
         wait_for_page_to_load(driver)
@@ -272,8 +287,11 @@ def test_download_counter_does_not_increment_on_repeated_download():
         print(f"Count after second download: {count_after_second}")
 
         # Verify count did NOT increment on second download
-        assert count_after_second == count_after_first, \
-            f"Download count should not increment on repeated download. Expected {count_after_first}, got {count_after_second}"
+        # Verify count did NOT increment on second download
+        assert count_after_second == count_after_first, (
+            f"Download count should not increment on repeated download. "
+            f"Expected {count_after_first}, got {count_after_second}"
+        )
 
         print("Test passed! Download counter did not increment on repeated download.")
 

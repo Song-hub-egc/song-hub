@@ -38,7 +38,6 @@ class Author(db.Model):
     fm_meta_data_id = db.Column(db.Integer, db.ForeignKey("fm_meta_data.id"))
     image_meta_data_id = db.Column(db.Integer, db.ForeignKey("image_meta_data.id"))
 
-
     def to_dict(self):
         return {"name": self.name, "affiliation": self.affiliation, "orcid": self.orcid}
 
@@ -75,7 +74,7 @@ class DataSet(db.Model):
     download_count = db.Column(db.Integer, nullable=False, default=0)
 
     ds_meta_data = db.relationship("DSMetaData", backref=db.backref("data_set", uselist=False))
-    
+
     dataset_type = db.Column(db.String(50))
 
     __mapper_args__ = {
@@ -89,7 +88,6 @@ class DataSet(db.Model):
     def files(self):
         return []
 
-
     def delete(self):
         db.session.delete(self)
         db.session.commit()
@@ -102,7 +100,6 @@ class DataSet(db.Model):
 
     def get_files_count(self):
         return 0
-
 
     def get_file_total_size(self):
         return 0

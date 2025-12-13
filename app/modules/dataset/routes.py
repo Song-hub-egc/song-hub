@@ -21,7 +21,7 @@ from flask_login import current_user, login_required
 
 from app.modules.dataset import dataset_bp
 from app.modules.dataset.models import DSDownloadRecord
-from app.modules.featuremodel.forms import UVLDataSetForm
+
 
 from app.modules.dataset.services import (
     AuthorService,
@@ -59,7 +59,7 @@ def create_dataset(dataset_type="uvl_dataset"):
     
     if dataset_type not in form_classes:
         abort(400, description="Invalid dataset type")
-        
+
     form = form_classes[dataset_type]()
 
     if request.method == "POST":
@@ -143,9 +143,9 @@ def upload():
 
     allowed_extensions = {".uvl", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp"}
     file_ext = os.path.splitext(file.filename)[1].lower()
-    
+
     if file_ext not in allowed_extensions:
-         return jsonify({"message": f"Invalid file extension: {file_ext}"}), 400
+        return jsonify({"message": f"Invalid file extension: {file_ext}"}), 400
 
     # create temp folder
     if not os.path.exists(temp_folder):

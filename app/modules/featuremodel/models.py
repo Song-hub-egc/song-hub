@@ -1,7 +1,7 @@
 from sqlalchemy import Enum as SQLAlchemyEnum
 
 from app import db
-from app import db
+
 from app.modules.dataset.models import Author, PublicationType, DataSet
 
 
@@ -21,7 +21,6 @@ class UVLDataset(DataSet):
 
     def get_file_total_size(self):
         return sum(file.size for fm in self.feature_models for file in fm.files)
-
 
 
 class FeatureModel(db.Model):

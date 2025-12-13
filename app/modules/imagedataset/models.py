@@ -2,6 +2,7 @@ from app import db
 from app.modules.dataset.models import DataSet, PublicationType, Author
 from sqlalchemy import Enum as SQLAlchemyEnum
 
+
 class ImageDataset(DataSet):
     id = db.Column(db.Integer, db.ForeignKey('data_set.id'), primary_key=True)
     images = db.relationship("Image", backref="image_dataset", lazy=True, cascade="all, delete")
@@ -27,8 +28,9 @@ class Image(db.Model):
     
     # We will reuse Hubfile but we need to update Hubfile model to support this relationship
     # For now, we assume Hubfile will be updated to have image_id
+    # For now, we assume Hubfile will be updated to have image_id
     files = db.relationship("Hubfile", backref="image", lazy=True, cascade="all, delete")
-    
+
     image_meta_data = db.relationship("ImageMetaData", uselist=False, backref="image", cascade="all, delete")
 
     def __repr__(self):
@@ -43,7 +45,7 @@ class ImageMetaData(db.Model):
     publication_type = db.Column(SQLAlchemyEnum(PublicationType), nullable=False)
     publication_doi = db.Column(db.String(120))
     tags = db.Column(db.String(120))
-    
+
     authors = db.relationship(
         "Author", backref="image_metadata", lazy=True, cascade="all, delete", foreign_keys=[Author.image_meta_data_id]
     )

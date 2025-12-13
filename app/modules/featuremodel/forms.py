@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import FieldList, FormField, SelectField, StringField, SubmitField, TextAreaField
+from wtforms import FieldList, FormField, SelectField, StringField, TextAreaField
 from wtforms.validators import URL, DataRequired, Optional
 
 from app.modules.dataset.forms import AuthorForm, BaseDataSetForm
@@ -43,6 +43,6 @@ class FeatureModelForm(FlaskForm):
 
 class UVLDataSetForm(BaseDataSetForm):
     feature_models = FieldList(FormField(FeatureModelForm), min_entries=1)
-    
+
     def get_feature_models(self):
         return self.feature_models

@@ -9,10 +9,12 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from core.environment.host import get_host_for_selenium_testing
 from core.selenium.common import close_driver, initialize_driver
 
+
 def wait_for_page_to_load(driver, timeout=10):
     WebDriverWait(driver, timeout).until(
         lambda driver: driver.execute_script("return document.readyState") == "complete"
     )
+
 
 def test_image_dataset_upload_flow(test_database_poblated):
     driver = initialize_driver()
@@ -40,30 +42,34 @@ def test_image_dataset_upload_flow(test_database_poblated):
         wait_for_page_to_load(driver)
         
         # 3. Fill Basic Info
+        # 3. Fill Basic Info
         try:
-             driver.find_element(By.NAME, "title").send_keys("Selenium Image Dataset")
+            driver.find_element(By.NAME, "title").send_keys("Selenium Image Dataset")
         except NoSuchElementException:
-             print(f"Failed to find title field. URL: {driver.current_url}")
-             raise
+            print(f"Failed to find title field. URL: {driver.current_url}")
+            raise
 
         driver.find_element(By.NAME, "desc").send_keys("Description for Selenium Image Dataset Test")
         driver.find_element(By.NAME, "tags").send_keys("selenium,image,test")
         
         # 4. Upload Image File
-        # Ensure we have a dummy image. 
-        # Using a widely available image or creating one? 
+        # Ensure we have a dummy image.
+        # Using a widely available image or creating one?
         # Ideally we should have a fixture, but for now I'll point to a generated one.
         image_path = os.path.abspath("app/modules/imagedataset/tests/test_image.png")
         if not os.path.exists(image_path):
             with open(image_path, "wb") as f:
-                f.write(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82")
+                f.write(
+                    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+                )
 
         dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
         dropzone.send_keys(image_path)
         
         # 5. Wait for dynamic form (checking 0_button)
+        # 5. Wait for dynamic form (checking 0_button)
         try:
-            show_button = WebDriverWait(driver, 10).until(
+            WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.ID, "0_button"))
             )
         except TimeoutException:
@@ -72,12 +78,13 @@ def test_image_dataset_upload_flow(test_database_poblated):
             raise AssertionError("Image file upload failed or Dynamic form not rendered.")
             
         # 6. Check Disclaimer & Submit
+        # 6. Check Disclaimer & Submit
         driver.find_element(By.ID, "agreeCheckbox").click()
-        time.sleep(1) # Let UI update state
+        time.sleep(1)  # Let UI update state
         
         upload_btn = driver.find_element(By.ID, "upload_button")
         if not upload_btn.is_enabled():
-             driver.execute_script("document.getElementById('agreeCheckbox').click();")
+            driver.execute_script("document.getElementById('agreeCheckbox').click();")
         
         # Submit
         driver.execute_script("arguments[0].scrollIntoView();", upload_btn)
@@ -102,5 +109,5 @@ def test_image_dataset_upload_flow(test_database_poblated):
         
     finally:
         if os.path.exists("app/modules/imagedataset/tests/test_image.png"):
-             os.remove("app/modules/imagedataset/tests/test_image.png")
+            os.remove("app/modules/imagedataset/tests/test_image.png")
         close_driver(driver)

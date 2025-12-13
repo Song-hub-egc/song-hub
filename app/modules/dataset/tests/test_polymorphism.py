@@ -1,7 +1,6 @@
-import pytest
-from app.modules.dataset.models import DataSet, DSMetaData, PublicationType
-from app.modules.featuremodel.models import UVLDataset, FeatureModel
+from app.modules.featuremodel.models import UVLDataset
 from app import db
+
 
 def test_uvl_dataset_creation(test_client):
     # Setup
@@ -31,9 +30,10 @@ def test_uvl_dataset_creation(test_client):
     assert hasattr(ds, 'feature_models')
     
     # Cleanup
-    db.session.delete(uvl_ds) # Should cascade if set up correctly
+    db.session.delete(uvl_ds)  # Should cascade if set up correctly
     db.session.delete(ds_meta)
     db.session.commit()
+
 
 def test_base_dataset_creation(test_client):
     # Setup

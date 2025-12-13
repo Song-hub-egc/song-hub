@@ -15,6 +15,7 @@ from locust import HttpUser, TaskSet, between, task
 from core.environment.host import get_host_for_locust_testing
 from core.locust.common import get_csrf_token
 
+
 class DownloadCounterBehavior(TaskSet):
     """
     Simulates user behavior related to download counter functionality.

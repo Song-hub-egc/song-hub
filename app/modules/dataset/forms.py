@@ -23,7 +23,6 @@ class AuthorForm(FlaskForm):
 
 
 
-
 class BaseDataSetForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
 
@@ -40,7 +39,6 @@ class BaseDataSetForm(FlaskForm):
     submit = SubmitField("Submit")
 
     def get_dsmetadata(self):
-
 
         publication_type_converted = self.convert_publication_type(self.publication_type.data)
 
@@ -62,6 +60,5 @@ class BaseDataSetForm(FlaskForm):
     def get_authors(self):
         return [author.get_author() for author in self.authors]
 
-    def get_authors(self):
-        return [author.get_author() for author in self.authors]
+
 

@@ -10,10 +10,12 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from core.environment.host import get_host_for_selenium_testing
 from core.selenium.common import close_driver, initialize_driver
 
+
 def wait_for_page_to_load(driver, timeout=10):
     WebDriverWait(driver, timeout).until(
         lambda driver: driver.execute_script("return document.readyState") == "complete"
     )
+
 
 def test_uvl_upload_flow(test_database_poblated):
     driver = initialize_driver()
@@ -41,11 +43,12 @@ def test_uvl_upload_flow(test_database_poblated):
         wait_for_page_to_load(driver)
         
         # 3. Fill Basic Info
+        # 3. Fill Basic Info
         try:
-             driver.find_element(By.NAME, "title").send_keys("Selenium UVL Dataset")
+            driver.find_element(By.NAME, "title").send_keys("Selenium UVL Dataset")
         except NoSuchElementException:
-             print(f"Failed to find title field. URL: {driver.current_url}")
-             raise
+            print(f"Failed to find title field. URL: {driver.current_url}")
+            raise
 
         driver.find_element(By.NAME, "desc").send_keys("Description for Selenium Test")
         driver.find_element(By.NAME, "tags").send_keys("selenium,test")
@@ -57,7 +60,9 @@ def test_uvl_upload_flow(test_database_poblated):
         
         # 5. Wait for UVL dynamic form (checking 0_button)
         try:
-            show_button = WebDriverWait(driver, 10).until(
+        # 5. Wait for UVL dynamic form (checking 0_button)
+        try:
+            WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.ID, "0_button"))
             )
         except TimeoutException:
@@ -66,12 +71,16 @@ def test_uvl_upload_flow(test_database_poblated):
             
         # 6. Check Disclaimer & Submit
         driver.find_element(By.ID, "agreeCheckbox").click()
-        time.sleep(1) # Let UI update state
+        # 6. Check Disclaimer & Submit
+        driver.find_element(By.ID, "agreeCheckbox").click()
+        time.sleep(1)  # Let UI update state
         
         upload_btn = driver.find_element(By.ID, "upload_button")
         if not upload_btn.is_enabled():
-             # Fallback if click didn't register
-             driver.execute_script("document.getElementById('agreeCheckbox').click();")
+        upload_btn = driver.find_element(By.ID, "upload_button")
+        if not upload_btn.is_enabled():
+            # Fallback if click didn't register
+            driver.execute_script("document.getElementById('agreeCheckbox').click();")
         
         # Submit
         # Scroll to button to ensure visibility
@@ -95,8 +104,9 @@ def test_uvl_upload_flow(test_database_poblated):
         # Check if "UVL models" section is present (Specific to UVLDataset)
         assert "UVL models" in driver.page_source
         assert "file1.uvl" in driver.page_source
-        
+
         print("Selenium Polymorphic Test Passed!")
-        
+
     finally:
         close_driver(driver)
+
