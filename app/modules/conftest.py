@@ -59,6 +59,7 @@ def clean_database(test_app):
         db.drop_all()
         db.create_all()
 
+
 @pytest.fixture(scope="function")
 def test_database_poblated(test_app):
     """
@@ -73,6 +74,7 @@ def test_database_poblated(test_app):
             yield testing_client
             db.session.remove()
             db.drop_all()
+
 
 def login(test_client, email, password):
     """

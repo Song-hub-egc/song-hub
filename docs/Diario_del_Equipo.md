@@ -65,12 +65,12 @@ En casos graves se podrá acudir directamente al coordinador.
 
 | Integrante | Firma |
 |-------------|--------|
-| Jesús Villalba Fernández | ![alt text](image.png) |
-| Rares Nicolae Petre | ![alt text](image-1.png)|
-| Daniel del Castillo Piñero | ![alt text](image-2.png) |
-| Pablo Pérez Gaspar | ![alt text](image-3.png)|
-| Diego Manzanos Anento | ![alt text](image-4.png)|
-| Miguel Ángel Gómez Vela *(Coordinador)* | ![alt text](image-5.png)|
+| Jesús Villalba Fernández | ![alt text](firmas/image.png) |
+| Rares Nicolae Petre | ![alt text](firmas/image-1.png) |
+| Daniel del Castillo Piñero | ![alt text](firmas/image-2.png) |
+| Pablo Pérez Gaspar | ![alt text](firmas/image-3.png) |
+| Diego Manzanos Anento | ![alt text](firmas/image-4.png) |
+| Miguel Ángel Gómez Vela *(Coordinador)* | ![alt text](firmas/image-5.png) |
 
 ---
 

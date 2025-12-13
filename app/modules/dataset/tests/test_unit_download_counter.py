@@ -16,7 +16,6 @@ from app.modules.auth.models import User
 from app.modules.dataset.models import DataSet
 from app.modules.dataset.services import DataSetService
 
-
 dataset_service = DataSetService()
 
 
@@ -52,8 +51,9 @@ def test_download_count_increments_on_first_download(test_database_poblated):
     db.session.refresh(dataset)
 
     # Verify download count incremented
-    assert dataset.download_count == initial_count + 1, \
-        f"Download count should increment from {initial_count} to {initial_count + 1}"
+    assert (
+        dataset.download_count == initial_count + 1
+    ), f"Download count should increment from {initial_count} to {initial_count + 1}"
 
 
 def test_download_count_does_not_increment_on_repeated_download(test_database_poblated):
@@ -80,8 +80,9 @@ def test_download_count_does_not_increment_on_repeated_download(test_database_po
     count_after_second = dataset.download_count
 
     # Verify count did NOT increment on second download
-    assert count_after_second == count_after_first, \
-        "Download count should not increment on repeated download from same user/session"
+    assert (
+        count_after_second == count_after_first
+    ), "Download count should not increment on repeated download from same user/session"
 
 
 def test_download_count_default_value_is_zero(test_database_poblated):
@@ -91,7 +92,7 @@ def test_download_count_default_value_is_zero(test_database_poblated):
         pytest.skip("No dataset seeded")
 
     # Check that download_count exists and has a valid value (>= 0)
-    assert hasattr(dataset, 'download_count'), "DataSet model should have download_count attribute"
+    assert hasattr(dataset, "download_count"), "DataSet model should have download_count attribute"
     assert dataset.download_count >= 0, "Download count should be non-negative"
 
 
@@ -107,12 +108,9 @@ def test_download_count_in_dataset_dict(test_database_poblated):
         dataset_dict = dataset.to_dict()
 
         # Verify download_count is in the dictionary
-        assert 'download_count' in dataset_dict, \
-            "download_count should be included in dataset dictionary"
-        assert isinstance(dataset_dict['download_count'], int), \
-            "download_count should be an integer"
-        assert dataset_dict['download_count'] >= 0, \
-            "download_count should be non-negative"
+        assert "download_count" in dataset_dict, "download_count should be included in dataset dictionary"
+        assert isinstance(dataset_dict["download_count"], int), "download_count should be an integer"
+        assert dataset_dict["download_count"] >= 0, "download_count should be non-negative"
 
 
 def test_download_count_displayed_in_view(test_database_poblated):
@@ -133,10 +131,10 @@ def test_download_count_displayed_in_view(test_database_poblated):
 
     # Check that download count is displayed
     html = response.get_data(as_text=True)
-    assert "Downloads" in html or "downloads" in html.lower(), \
-        "Dataset view should display 'Downloads' label"
-    assert str(dataset.download_count) in html, \
-        f"Dataset view should display download count value ({dataset.download_count})"
+    assert "Downloads" in html or "downloads" in html.lower(), "Dataset view should display 'Downloads' label"
+    assert (
+        str(dataset.download_count) in html
+    ), f"Dataset view should display download count value ({dataset.download_count})"
 
 
 def test_stats_endpoint_returns_download_count(test_database_poblated):
@@ -154,9 +152,9 @@ def test_stats_endpoint_returns_download_count(test_database_poblated):
     # Verify JSON response
     data = response.get_json()
     assert data is not None, "Stats endpoint should return JSON"
-    assert 'download_count' in data, "Stats should include download_count"
-    assert isinstance(data['download_count'], int), "download_count should be an integer"
-    assert data['download_count'] >= 0, "download_count should be non-negative"
+    assert "download_count" in data, "Stats should include download_count"
+    assert isinstance(data["download_count"], int), "download_count should be an integer"
+    assert data["download_count"] >= 0, "download_count should be non-negative"
 
 
 def test_stats_endpoint_includes_all_metrics(test_database_poblated):
@@ -172,15 +170,15 @@ def test_stats_endpoint_includes_all_metrics(test_database_poblated):
 
     data = response.get_json()
     expected_fields = [
-        'dataset_id',
-        'title',
-        'download_count',
-        'total_download_records',
-        'total_views',
-        'created_at',
-        'files_count',
-        'total_size_bytes',
-        'publication_type'
+        "dataset_id",
+        "title",
+        "download_count",
+        "total_download_records",
+        "total_views",
+        "created_at",
+        "files_count",
+        "total_size_bytes",
+        "publication_type",
     ]
 
     for field in expected_fields:
@@ -200,8 +198,7 @@ def test_increment_download_count_service_method(test_database_poblated):
 
     # Refresh and verify
     db.session.refresh(dataset)
-    assert dataset.download_count == initial_count + 1, \
-        "Service method should increment download count"
+    assert dataset.download_count == initial_count + 1, "Service method should increment download count"
 
 
 def test_download_count_persists_across_sessions(test_database_poblated):
@@ -218,5 +215,4 @@ def test_download_count_persists_across_sessions(test_database_poblated):
     fetched_dataset = db.session.query(DataSet).filter_by(id=dataset.id).first()
 
     # Verify count persisted
-    assert fetched_dataset.download_count == 42, \
-        "Download count should persist in database"
+    assert fetched_dataset.download_count == 42, "Download count should persist in database"

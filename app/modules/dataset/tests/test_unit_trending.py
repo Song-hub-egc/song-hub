@@ -1,11 +1,7 @@
-import pytest
-
 from app import db
-
 from app.modules.auth.models import User
 from app.modules.dataset.models import DataSet, DSDownloadRecord, DSViewRecord
 from app.modules.dataset.services import DataSetService
-
 
 dataset_service = DataSetService()
 
@@ -48,12 +44,11 @@ def test_trending_download_weekly(test_database_poblated):
     dataset, user = _get_first_dataset_and_user()
     if not dataset:
         import pytest
+
         pytest.skip("No dataset seeded")
 
     # Count downloads from DSDownloadRecord table for this dataset
-    initial_downloads = (
-        db.session.query(DSDownloadRecord).filter_by(dataset_id=dataset.id).count() or 0
-    )
+    initial_downloads = db.session.query(DSDownloadRecord).filter_by(dataset_id=dataset.id).count() or 0
 
     download_url = _build_download_url(client, dataset.id)
     response = client.get(download_url, follow_redirects=True)
@@ -69,11 +64,10 @@ def test_trending_multiple_downloads_same_user(test_database_poblated):
     dataset, user = _get_first_dataset_and_user()
     if not dataset:
         import pytest
+
         pytest.skip("No dataset seeded")
 
-    initial_downloads = (
-        db.session.query(DSDownloadRecord).filter_by(dataset_id=dataset.id).count() or 0
-    )
+    initial_downloads = db.session.query(DSDownloadRecord).filter_by(dataset_id=dataset.id).count() or 0
 
     download_url = _build_download_url(client, dataset.id)
 
@@ -99,6 +93,7 @@ def test_trending_page_renders_and_contains_dataset_info(test_database_poblated)
     dataset, user = _get_first_dataset_and_user()
     if not dataset:
         import pytest
+
         pytest.skip("No dataset seeded")
 
     # Touch DOI and download endpoints to generate activity
@@ -110,7 +105,7 @@ def test_trending_page_renders_and_contains_dataset_info(test_database_poblated)
 
     text = response.get_data(as_text=True)
     # Debe contener el título del dataset
-    assert (dataset.ds_meta_data.title in text), "Trending page does not contain the dataset title"
+    assert dataset.ds_meta_data.title in text, "Trending page does not contain the dataset title"
 
     # Debe contener el badge de downloads y views con los contadores actuales
     downloads_count = db.session.query(DSDownloadRecord).filter_by(dataset_id=dataset.id).count() or 0
@@ -121,13 +116,19 @@ def test_trending_page_renders_and_contains_dataset_info(test_database_poblated)
 
     # The public template may render downloads as e.g. "1 downloads" or "Downloads: 1".
     lower = text.lower()
-    assert (f"{downloads_count} downloads" in lower or downloads_text.lower() in lower or (str(downloads_count) in lower and "download" in lower)), \
-        "Trending page does not show downloads count"
+    assert (
+        f"{downloads_count} downloads" in lower
+        or downloads_text.lower() in lower
+        or (str(downloads_count) in lower and "download" in lower)
+    ), "Trending page does not show downloads count"
 
     # Views may or may not be present depending on template; only assert if there is at least one view
     if views_count > 0:
-        assert (f"{views_count} views" in lower or views_text.lower() in lower or (str(views_count) in lower and "view" in lower)), \
-            "Trending page does not show views count"
+        assert (
+            f"{views_count} views" in lower
+            or views_text.lower() in lower
+            or (str(views_count) in lower and "view" in lower)
+        ), "Trending page does not show views count"
     # Debe contener el enlace de descarga esperado
     download_link = f"/dataset/download/{dataset.id}"
     assert download_link in text, "Trending page does not include download link for the dataset"
@@ -141,6 +142,7 @@ def test_trending_download_links_work(test_database_poblated):
     dataset, user = _get_first_dataset_and_user()
     if not dataset:
         import pytest
+
         pytest.skip("No dataset seeded")
 
     trending_url = _build_trending_url()
