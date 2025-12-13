@@ -9,6 +9,7 @@ from flask import session
 from flask_login import current_user
 
 from app import db
+from app.modules.audiodataset.models import Audio
 from app.modules.cart.models import Cart, CartItem
 from app.modules.cart.repositories import CartRepository
 from app.modules.dataset.models import DataSet, DSDownloadRecord
@@ -44,11 +45,34 @@ class CartService:
             return {"success": False, "message": "Feature model not found"}
 
         # Check if already in cart
-        if self.repository.item_exists(cart, feature_model_id):
+        if self.repository.item_exists(cart, feature_model_id=feature_model_id):
             return {"success": False, "message": "Item already in cart"}
 
         # Add to cart
-        cart_item = self.repository.add_item(cart, feature_model_id)
+        cart_item = self.repository.add_item(cart, feature_model_id=feature_model_id)
+
+        return {
+            "success": True,
+            "message": "Added to cart",
+            "cart_item_id": cart_item.id,
+            "cart_count": self.get_cart_count(),
+        }
+
+    def add_audio_to_cart(self, audio_id: int) -> dict:
+        """Add an audio file to the cart."""
+        cart = self.get_or_create_cart()
+
+        # Check if audio exists
+        audio = Audio.query.get(audio_id)
+        if not audio:
+            return {"success": False, "message": "Audio file not found"}
+
+        # Check if already in cart
+        if self.repository.item_exists(cart, audio_id=audio_id):
+            return {"success": False, "message": "Item already in cart"}
+
+        # Add to cart
+        cart_item = self.repository.add_item(cart, audio_id=audio_id)
 
         return {
             "success": True,
@@ -109,7 +133,7 @@ class CartService:
 
     def generate_cart_download(self) -> Optional[str]:
         """
-        Generate a ZIP file containing all feature models in the cart.
+        Generate a ZIP file containing all items in the cart.
         Returns the path to the generated ZIP file.
         """
         cart = self.get_or_create_cart()
@@ -129,14 +153,24 @@ class CartService:
             datasets_info = {}
 
             for cart_item in cart_items:
-                feature_model = cart_item.feature_model
+                files_to_add = []
+                dataset = None
 
-                if not feature_model:
-                    continue
+                if cart_item.feature_model_id:
+                    feature_model = cart_item.feature_model
+                    if feature_model:
+                        dataset = DataSet.query.get(feature_model.data_set_id)
+                        if dataset:
+                            files_to_add = feature_model.files
 
-                # Get dataset information
-                dataset = DataSet.query.get(feature_model.data_set_id)
-                if not dataset:
+                elif cart_item.audio_id:
+                    audio = cart_item.audio
+                    if audio:
+                        dataset = audio.audio_dataset
+                        if dataset:
+                            files_to_add = audio.files
+
+                if not dataset or not files_to_add:
                     continue
 
                 dataset_name = dataset.ds_meta_data.title if dataset.ds_meta_data else f"dataset_{dataset.id}"
@@ -146,12 +180,12 @@ class CartService:
                 if dataset.id not in datasets_info:
                     datasets_info[dataset.id] = {"name": dataset_name, "models": []}
 
-                # Add feature model files to ZIP
-                for hubfile in feature_model.files:
+                # Add files to ZIP
+                for hubfile in files_to_add:
                     file_path = f"uploads/user_{dataset.user_id}/dataset_{dataset.id}/{hubfile.name}"
 
                     if os.path.exists(file_path):
-                        # Create structure: dataset_name/model_file.uvl
+                        # Create structure: dataset_name/filename
                         arcname = os.path.join(dataset_name, hubfile.name)
                         zipf.write(file_path, arcname=arcname)
 
@@ -165,7 +199,7 @@ class CartService:
                 f.write(readme_content)
             zipf.write(readme_path, arcname="README.txt")
 
-        # Record download for each feature model
+        # Record download for each item
         self._record_downloads(cart_items)
 
         return zip_path
@@ -188,7 +222,7 @@ class CartService:
             "",
             f"Downloaded: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}",
             "",
-            "This archive contains feature models you selected from UVLHUB.IO",
+            "This archive contains items you selected from UVLHUB.IO",
             "",
             "=" * 60,
             "CONTENTS",
@@ -198,7 +232,7 @@ class CartService:
 
         for dataset_id, info in datasets_info.items():
             content.append(f"Dataset: {info['name']}")
-            content.append(f"  Models ({len(info['models'])}):")
+            content.append(f"  Files ({len(info['models'])}):")
             for model in info["models"]:
                 content.append(f"    - {model}")
             content.append("")
@@ -209,7 +243,7 @@ class CartService:
                 "CITATION",
                 "=" * 60,
                 "",
-                "If you use these models in your research, please cite:",
+                "If you use these files in your research, please cite:",
                 "UVLHUB.IO - https://uvlhub.io",
                 "",
                 "For individual dataset citations, please refer to the",
@@ -230,10 +264,15 @@ class CartService:
             session["download_cookie"] = download_cookie
 
         for cart_item in cart_items:
-            feature_model = cart_item.feature_model
-            if feature_model:
-                dataset_id = feature_model.data_set_id
+            dataset_id = None
+            if cart_item.feature_model_id and cart_item.feature_model:
+                dataset_id = cart_item.feature_model.data_set_id
+            elif cart_item.audio_id and cart_item.audio:
+                # audio.audio_dataset is the object, we need ID.
+                # Audio model has data_set_id field.
+                dataset_id = cart_item.audio.data_set_id
 
+            if dataset_id:
                 # Create download record
                 download_record = DSDownloadRecord(
                     user_id=user_id,
