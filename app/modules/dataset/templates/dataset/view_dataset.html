@@ -343,7 +343,40 @@
                             </ul>
                         </div>
 
+                        <div class="btn-group" role="group">
+                            <button id="btnGroupDropExport{{ file.id }}" type="button"
+                                class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false" style=" border-radius: 5px;">
+                                <i data-feather="download"></i> Export
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="btnGroupDropExport{{ file.id }}">
+                                <li>
+                                    <a class="dropdown-item"
+                                        href="{{ url_for('hubfile.download_file', file_id=file.id) }}">
+                                        UVL
+                                    </a>
+                                    <a class="dropdown-item"
+                                        href="{{ url_for('flamapy.to_glencoe', file_id=file.id) }}">
+                                        Glencoe
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('flamapy.to_cnf', file_id=file.id) }}">
+                                        DIMACS
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('flamapy.to_splot', file_id=file.id) }}">
+                                        SPLOT
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
+                        <button onclick="addToCart({{ feature_model.id }})" class="btn btn-outline-success btn-sm"
+                            style="border-radius: 5px;">
+                            <i data-feather="shopping-cart"></i> Add to cart
+                        </button>
 
                     </div>
                 </div>
@@ -430,10 +463,20 @@
 
 
 
-        <a href="/dataset/download/{{ dataset.id }}" class="btn btn-primary mt-3" style="border-radius: 5px;">
+        <a href="/dataset/download/{{ dataset.id }}" class="btn btn-primary mt-3"
+            style="border-radius: 5px; width: 100%;">
             <i data-feather="download" class="center-button-icon"></i>
             Download all ({{ dataset.get_file_total_size_for_human() }})
         </a>
+
+        {% if dataset.feature_models %}
+        <button
+            onclick="addAllModelsToCart({{ dataset.id }}, [{% for fm in dataset.feature_models %}{{ fm.id }}{% if not loop.last %}, {% endif %}{% endfor %}])"
+            class="btn btn-outline-success mt-2" style="border-radius: 5px; width: 100%;">
+            <i data-feather="shopping-cart" class="center-button-icon"></i>
+            Add all models to cart ({{ dataset.feature_models|length }})
+        </button>
+        {% endif %}
     </div>
 
 </div>
@@ -460,7 +503,8 @@
                 <pre id="fileContent"
                     style="display:none; height: 100%; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; padding: 20px; border-radius: 5px; border: 1px solid #ccc;"></pre>
                 <div id="fileImageWrapper" style="display:none; text-align:center;">
-                    <img id="fileImage" src="" alt="File preview" style="max-width:100%; max-height:70vh; border-radius:4px;"/>
+                    <img id="fileImage" src="" alt="File preview"
+                        style="max-width:100%; max-height:70vh; border-radius:4px;" />
                 </div>
                 <div id="fileAudioWrapper" style="display:none; text-align:center;">
                     <audio id="fileAudio" controls style="width:100%; margin-top:10px;">
@@ -542,44 +586,44 @@
     }
 
     function checkUVL(file_id) {
-    const outputDiv = document.getElementById('check_' + file_id);
-    outputDiv.innerHTML = ''; // Clear previous output
+        const outputDiv = document.getElementById('check_' + file_id);
+        outputDiv.innerHTML = ''; // Clear previous output
 
-    fetch(`/flamapy/check_uvl/${file_id}`)
-        .then(response => {
-            return response.json().then(data => ({
-                status: response.status,
-                data
-            }));
-        })
-        .then(({ status, data }) => {
-            if (status === 400) {
-                // Display errors
-                if (data.errors) {
-                    outputDiv.innerHTML = '<span class="badge badge-danger">Errors:</span>';
-                    data.errors.forEach(error => {
-                        const errorElement = document.createElement('span');
-                        errorElement.className = 'badge badge-danger';
-                        errorElement.textContent = error;
-                        outputDiv.appendChild(errorElement);
-                        outputDiv.appendChild(document.createElement('br')); // Line break for better readability
-                    });
+        fetch(`/flamapy/check_uvl/${file_id}`)
+            .then(response => {
+                return response.json().then(data => ({
+                    status: response.status,
+                    data
+                }));
+            })
+            .then(({ status, data }) => {
+                if (status === 400) {
+                    // Display errors
+                    if (data.errors) {
+                        outputDiv.innerHTML = '<span class="badge badge-danger">Errors:</span>';
+                        data.errors.forEach(error => {
+                            const errorElement = document.createElement('span');
+                            errorElement.className = 'badge badge-danger';
+                            errorElement.textContent = error;
+                            outputDiv.appendChild(errorElement);
+                            outputDiv.appendChild(document.createElement('br')); // Line break for better readability
+                        });
+                    } else {
+                        outputDiv.innerHTML = `<span class="badge badge-danger">Error: ${data.error}</span>`;
+                    }
+                } else if (status === 200) {
+                    // Display success message
+                    outputDiv.innerHTML = '<span class="badge badge-success">Valid Model</span>';
                 } else {
-                    outputDiv.innerHTML = `<span class="badge badge-danger">Error: ${data.error}</span>`;
+                    // Handle unexpected status
+                    outputDiv.innerHTML = `<span class="badge badge-warning">Unexpected response status: ${status}</span>`;
                 }
-            } else if (status === 200) {
-                // Display success message
-                outputDiv.innerHTML = '<span class="badge badge-success">Valid Model</span>';
-            } else {
-                // Handle unexpected status
-                outputDiv.innerHTML = `<span class="badge badge-warning">Unexpected response status: ${status}</span>`;
-            }
-        })
-        .catch(error => {
-            // Handle fetch errors
-            outputDiv.innerHTML = `<span class="badge badge-danger">An unexpected error occurred: ${error.message}</span>`;
-        });
-}
+            })
+            .catch(error => {
+                // Handle fetch errors
+                outputDiv.innerHTML = `<span class="badge badge-danger">An unexpected error occurred: ${error.message}</span>`;
+            });
+    }
 
 
     /*
@@ -635,12 +679,61 @@
     */
     function copyToClipboard() {
         const text = document.getElementById('fileContent').textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            console.log('Text copied to clipboard');
-        }).catch(err => {
+        navigator.clipboard.writeText(text).then(function () {
+            console.log('Text successfully copied');
+        }, function (err) {
             console.error('Failed to copy text: ', err);
         });
     }
+
+    async function addAllModelsToCart(datasetId, featureModelIds) {
+        let addedCount = 0;
+        let alreadyInCart = 0;
+
+        // Add models sequentially to avoid session conflicts
+        for (const fmId of featureModelIds) {
+            try {
+                const response = await fetch(`/cart/add/${fmId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    addedCount++;
+                } else if (data.message && data.message.includes('already')) {
+                    alreadyInCart++;
+                }
+            } catch (error) {
+                console.error(`Error adding model ${fmId} to cart:`, error);
+            }
+        }
+
+        // Update cart count after all models are processed
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+        }
+
+        // Show summary message
+        let message = '';
+        if (addedCount > 0) {
+            message += `✓ Added ${addedCount} model${addedCount > 1 ? 's' : ''} to cart! `;
+        }
+        if (alreadyInCart > 0) {
+            message += `${alreadyInCart} already in cart.`;
+        }
+
+        if (typeof showToast === 'function') {
+            showToast(message || 'No models were added', addedCount > 0 ? 'success' : 'warning');
+        } else {
+            alert(message);
+        }
+
+        // Re-render feather icons for any newly added elements
+        feather.replace();
+    }
+
 </script>
 
 {% endblock %}
+```
