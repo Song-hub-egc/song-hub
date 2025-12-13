@@ -141,6 +141,14 @@ class DataSetRepository(BaseRepository):
 
         return result
 
+    def increment_download_count(self, dataset_id: int):
+        """Increment the download count for a dataset"""
+        dataset = self.model.query.filter_by(id=dataset_id).first()
+        if dataset:
+            dataset.download_count += 1
+            self.session.commit()
+        return dataset
+
 
 class DOIMappingRepository(BaseRepository):
     def __init__(self):

@@ -110,32 +110,33 @@
 
                 {% if dataset.ds_meta_data.dataset_doi %}
                 <div class="row mb-2">
-                    
-                        <div class="col-md-4 col-12">
-                            <span class=" text-secondary">
-                                Zenodo record
-                            </span>
-                        </div>
 
-                        {% if FLASK_ENV == 'production' %}
-                            <div class="col-md-8 col-12">
-                                <a href="https://zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}" target="_blank">
-                                    https://zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}
-                                </a>
-                            </div>
-                        {% elif FLASK_ENV == 'development' %}
-                            <div class="col-md-8 col-12">
-                                <a href="https://sandbox.zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}" target="_blank">
-                                    https://sandbox.zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}
-                                </a>
-                            </div>
-                        {% else %}
-                            <div class="col-md-8 col-12">
-                                <a href="https://zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}" target="_blank">
-                                    https://sandbox.zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}
-                                </a>
-                            </div>
-                        {% endif %}
+                    <div class="col-md-4 col-12">
+                        <span class=" text-secondary">
+                            Zenodo record
+                        </span>
+                    </div>
+
+                    {% if FLASK_ENV == 'production' %}
+                    <div class="col-md-8 col-12">
+                        <a href="https://zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}" target="_blank">
+                            https://zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}
+                        </a>
+                    </div>
+                    {% elif FLASK_ENV == 'development' %}
+                    <div class="col-md-8 col-12">
+                        <a href="https://sandbox.zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}"
+                            target="_blank">
+                            https://sandbox.zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="col-md-8 col-12">
+                        <a href="https://zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}" target="_blank">
+                            https://sandbox.zenodo.org/records/{{ dataset.ds_meta_data.deposition_id }}
+                        </a>
+                    </div>
+                    {% endif %}
 
                 </div>
                 {% endif %}
@@ -154,7 +155,22 @@
 
                 </div>
 
-                
+                <div class="row mb-2">
+
+                    <div class="col-md-4 col-12">
+                        <span class=" text-secondary">
+                            Downloads
+                        </span>
+                    </div>
+                    <div class="col-md-8 col-12">
+                        <span class="badge bg-primary">
+                            <i data-feather="download"></i> {{ dataset.download_count }}
+                        </span>
+                    </div>
+
+                </div>
+
+
 
             </div>
 
@@ -174,11 +190,11 @@
                         {{ dataset.get_uvlhub_doi() }}
                     </span>
                 </button>
-                
+
                 <div id="dataset_doi_uvlhub" style="display: none">
                     {{ dataset.get_uvlhub_doi() }}
                 </div>
-                
+
             </div>
             {% endif %}
 
@@ -189,20 +205,22 @@
             <div class="card-body">
 
                 <h3> Related publication </h3>
-                
+
                 David Romero-Organvidez, José A. Galindo, Chico Sundermann, Jose-Miguel Horcas, David Benavides,
                 <i>UVLHub: A feature model data repository using UVL and open science principles</i>,
                 Journal of Systems and Software,
                 2024,
                 112150,
                 ISSN 0164-1212,
-                <a href="https://doi.org/10.1016/j.jss.2024.112150" target="_blank">https://doi.org/10.1016/j.jss.2024.112150</a>
+                <a href="https://doi.org/10.1016/j.jss.2024.112150"
+                    target="_blank">https://doi.org/10.1016/j.jss.2024.112150</a>
 
             </div>
 
             <div class="card-body mt-0 pt-0">
 
-                <button onclick="copyText('bibtex_cite')" class="btn btn-light btn-sm" style="border-radius: 5px; margin-right: 10px">
+                <button onclick="copyText('bibtex_cite')" class="btn btn-light btn-sm"
+                    style="border-radius: 5px; margin-right: 10px">
                     <i data-feather="clipboard" class="center-button-icon"></i>
                     Copy in BibTex
                 </button>
@@ -233,105 +251,191 @@
 
         <div class="list-group">
 
+            {% if dataset.dataset_type == 'uvl_dataset' %}
             <div class="list-group-item">
 
                 <div class="row">
                     <div class="col-12 d-flex justify-content-between align-items-center">
                         <h4 style="margin-bottom: 0px">UVL models</h4>
-                        <h4 style="margin-bottom: 0px;"><span class="badge bg-dark">{{ dataset.get_files_count() }}</span></h4>
+                        <h4 style="margin-bottom: 0px;"><span class="badge bg-dark">{{ dataset.get_files_count()
+                                }}</span></h4>
                     </div>
                 </div>
-                
+
 
             </div>
-            
+
 
             {% for feature_model in dataset.feature_models %}
-                {% for file in feature_model.files %}
-                    <div class="list-group-item">
-                        
+            {% for file in feature_model.files %}
+            <div class="list-group-item">
+
+                <div class="row">
+                    <div class="col-12">
+
                         <div class="row">
-                            <div class="col-12">
-
-                                <div class="row">
-                                    <div class="col-8">
-                                        <i data-feather="file"></i> {{ file.name }}
-                                        <br>
-                                        <small class="text-muted">({{ file.get_formatted_size() }})</small>
-                                    </div>
-                                    <div class="col-2">
-                                        <div id="check_{{ file.id }}">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                
+                            <div class="col-8">
+                                <i data-feather="file"></i> {{ file.name }}
+                                <br>
+                                <small class="text-muted">({{ file.get_formatted_size() }})</small>
                             </div>
-                            <div class="col-12 text-end" >
+                            <div class="col-2">
+                                <div id="check_{{ file.id }}">
+                                </div>
+                            </div>
+                        </div>
 
-                                <button onclick="viewFile('{{ file.id }}')" class="btn btn-outline-secondary btn-sm" style="border-radius: 5px;">
-                                    <i data-feather="eye"></i> View
-                                </button>
 
-                                <div class="btn-group" role="group">
-                                    <button id="btnGroupDrop{{ file.id }}" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style=" border-radius: 5px;">
-                                        <i data-feather="check"></i> Check
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop{{ file.id }}">
-                                        <li>
-                                            <a class="dropdown-item" href="javascript:void(0);" onclick="checkUVL('{{ file.id }}')">Syntax check</a>
-                                        </li>
-                                        <!--
+                    </div>
+                    <div class="col-12 text-end">
+
+                        <button onclick="viewFile('{{ file.id }}')" class="btn btn-outline-secondary btn-sm"
+                            style="border-radius: 5px;">
+                            <i data-feather="eye"></i> View
+                        </button>
+
+                        <div class="btn-group" role="group">
+                            <button id="btnGroupDrop{{ file.id }}" type="button"
+                                class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false" style=" border-radius: 5px;">
+                                <i data-feather="check"></i> Check
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="btnGroupDrop{{ file.id }}">
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);"
+                                        onclick="checkUVL('{{ file.id }}')">Syntax check</a>
+                                </li>
+                                <!--
                                         <li>
                                             <a class="dropdown-item" href="{{ url_for('flamapy.valid', file_id=file.id) }}">SAT validity check</a>
                                         </li>
                                         -->
-                                    </ul>
-                                </div>
-                                
-                                <div class="btn-group" role="group">
-                                    <button id="btnGroupDropExport{{ file.id }}" type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style=" border-radius: 5px;">
-                                        <i data-feather="download"></i> Export
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="btnGroupDropExport{{ file.id }}">
-                                        <li>
-                                            <a class="dropdown-item" href="{{ url_for('hubfile.download_file', file_id=file.id) }}">
-                                                UVL
-                                            </a>
-                                            <a class="dropdown-item" href="{{ url_for('flamapy.to_glencoe', file_id=file.id) }}">
-                                                Glencoe
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" href="{{ url_for('flamapy.to_cnf', file_id=file.id) }}">
-                                                DIMACS
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" href="{{ url_for('flamapy.to_splot', file_id=file.id) }}">
-                                                SPLOT
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                
-                                
+                            </ul>
+                        </div>
 
+                        <div class="btn-group" role="group">
+                            <button id="btnGroupDropExport{{ file.id }}" type="button"
+                                class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false" style=" border-radius: 5px;">
+                                <i data-feather="download"></i> Export
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="btnGroupDropExport{{ file.id }}">
+                                <li>
+                                    <a class="dropdown-item"
+                                        href="{{ url_for('hubfile.download_file', file_id=file.id) }}">
+                                        UVL
+                                    </a>
+                                    <a class="dropdown-item"
+                                        href="{{ url_for('flamapy.to_glencoe', file_id=file.id) }}">
+                                        Glencoe
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('flamapy.to_cnf', file_id=file.id) }}">
+                                        DIMACS
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('flamapy.to_splot', file_id=file.id) }}">
+                                        SPLOT
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+
+            {% elif dataset.dataset_type == 'image_dataset' %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <h4 style="margin-bottom: 0px">Images</h4>
+                        <h4 style="margin-bottom: 0px;"><span class="badge bg-dark">{{ dataset.get_files_count()
+                                }}</span></h4>
+                    </div>
+                </div>
+            </div>
+
+            {% for image in dataset.images %}
+            {% for file in image.files %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-8">
+                                <i data-feather="image"></i> {{ file.name }}
+                                <br>
+                                <small class="text-muted">({{ file.get_formatted_size() }})</small>
+                            </div>
+                            <div class="col-4 text-end">
+                                <a href="{{ url_for('hubfile.download_file', file_id=file.id) }}"
+                                    class="btn btn-outline-primary btn-sm" style="border-radius: 5px;">
+                                    <i data-feather="download"></i> Download
+                                </a>
                             </div>
                         </div>
                     </div>
-                {% endfor %}
+                </div>
+            </div>
             {% endfor %}
+            {% endfor %}
+
+            {% elif dataset.dataset_type == 'audio_dataset' %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <h4 style="margin-bottom: 0px">Audio files</h4>
+                        <h4 style="margin-bottom: 0px;"><span class="badge bg-dark">{{ dataset.get_files_count()
+                                }}</span></h4>
+                    </div>
+                </div>
+            </div>
+
+            {% for audio in dataset.audios %}
+            {% for file in audio.files %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-8">
+                                <i data-feather="music"></i> {{ file.name }}
+                                <br>
+                                <small class="text-muted">({{ file.get_formatted_size() }})</small>
+                            </div>
+                            <div class="col-4 text-end">
+                                <a href="{{ url_for('hubfile.download_file', file_id=file.id) }}"
+                                    class="btn btn-outline-primary btn-sm" style="border-radius: 5px;">
+                                    <i data-feather="download"></i> Download
+                                </a>
+                                <button class="btn btn-outline-secondary btn-sm" style="border-radius: 5px;"
+                                    onclick="viewFile({{ file.id }})">
+                                    <i data-feather="play"></i> Preview
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+            {% endif %}
+
         </div>
-        
-        
-    
+
+
+
         <a href="/dataset/download/{{ dataset.id }}" class="btn btn-primary mt-3" style="border-radius: 5px;">
             <i data-feather="download" class="center-button-icon"></i>
             Download all ({{ dataset.get_file_total_size_for_human() }})
         </a>
     </div>
-    
+
 </div>
 
 <!-- Modal-->
@@ -353,8 +457,16 @@
                 </div>
             </div>
             <div class="modal-body" style="overflow-y: auto; height: calc(100vh - 50px);">
-                <pre id="fileContent" style="height: 100%; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; padding: 20px; border-radius: 5px; border: 1px solid #ccc;"></pre>
-
+                <pre id="fileContent"
+                    style="display:none; height: 100%; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; padding: 20px; border-radius: 5px; border: 1px solid #ccc;"></pre>
+                <div id="fileImageWrapper" style="display:none; text-align:center;">
+                    <img id="fileImage" src="" alt="File preview" style="max-width:100%; max-height:70vh; border-radius:4px;"/>
+                </div>
+                <div id="fileAudioWrapper" style="display:none; text-align:center;">
+                    <audio id="fileAudio" controls style="width:100%; margin-top:10px;">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
             </div>
         </div>
     </div>
@@ -373,11 +485,48 @@
 
     function viewFile(fileId) {
         fetch(`/file/view/${fileId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('fileContent').textContent = data.content;
+            .then(async response => {
+                const contentType = response.headers.get('Content-Type') || '';
                 currentFileId = fileId;
                 document.getElementById('downloadButton').href = `/file/download/${fileId}`;
+
+                const fileContentEl = document.getElementById('fileContent');
+                const fileImageWrapper = document.getElementById('fileImageWrapper');
+                const fileImageEl = document.getElementById('fileImage');
+                const fileAudioWrapper = document.getElementById('fileAudioWrapper');
+                const fileAudioEl = document.getElementById('fileAudio');
+
+                // Reset displays
+                fileContentEl.style.display = 'none';
+                fileImageWrapper.style.display = 'none';
+                fileAudioWrapper.style.display = 'none';
+                fileImageEl.src = '';
+                fileAudioEl.removeAttribute('src');
+                fileAudioEl.load();
+
+                if (contentType.includes('application/json')) {
+                    const data = await response.json();
+                    fileContentEl.textContent = data.content || '';
+                    fileContentEl.style.display = 'block';
+                } else if (contentType.startsWith('image/')) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    fileImageEl.src = url;
+                    fileImageWrapper.style.display = 'block';
+                } else if (contentType.startsWith('audio/')) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    fileAudioEl.src = url;
+                    fileAudioWrapper.style.display = 'block';
+                    fileAudioEl.load();
+                    fileAudioEl.play();
+                } else {
+                    // Fallback: try to read as text
+                    const text = await response.text();
+                    fileContentEl.textContent = text;
+                    fileContentEl.style.display = 'block';
+                }
+
                 var modal = new bootstrap.Modal(document.getElementById('fileViewerModal'));
                 modal.show();
             })

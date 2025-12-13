@@ -4,12 +4,11 @@ import os
 import requests
 from dotenv import load_dotenv
 from flask import Response, jsonify
-from flask_login import current_user
 
 from app.modules.dataset.models import DataSet
-from app.modules.featuremodel.models import FeatureModel
+from app.modules.hubfile.models import Hubfile
+from app.modules.hubfile.services import HubfileService
 from app.modules.zenodo.repositories import ZenodoRepository
-from core.configuration.configuration import uploads_folder_name
 from core.services.BaseService import BaseService
 
 logger = logging.getLogger(__name__)
@@ -186,26 +185,30 @@ class ZenodoService(BaseService):
             raise Exception(error_message)
         return response.json()
 
-    def upload_file(self, dataset: DataSet, deposition_id: int, feature_model: FeatureModel, user=None) -> dict:
+    def upload_dataset_file(self, hubfile: Hubfile, deposition_id: int, user=None) -> dict:
         """
-        Upload a file to a deposition in Zenodo.
+        Upload a dataset file (UVL or image) to a deposition in Zenodo.
 
         Args:
+            hubfile (Hubfile): The Hubfile object representing the stored file.
             deposition_id (int): The ID of the deposition in Zenodo.
-            feature_model (FeatureModel): The FeatureModel object representing the feature model.
-            user (FeatureModel): The User object representing the file owner.
+            user (User): Optional user override for path resolution.
 
         Returns:
             dict: The response in JSON format with the details of the uploaded file.
         """
-        uvl_filename = feature_model.fm_meta_data.uvl_filename
-        data = {"name": uvl_filename}
-        user_id = current_user.id if user is None else user.id
-        file_path = os.path.join(uploads_folder_name(), f"user_{str(user_id)}", f"dataset_{dataset.id}/", uvl_filename)
-        files = {"file": open(file_path, "rb")}
+        data = {"name": hubfile.name}
+
+        # Resolve file path using HubfileService to support both UVL and image datasets.
+        file_path = HubfileService().get_path_by_hubfile(hubfile)
+        if not file_path:
+            raise Exception(f"Failed to resolve path for hubfile id={hubfile.id}")
 
         publish_url = f"{self.ZENODO_API_URL}/{deposition_id}/files"
-        response = requests.post(publish_url, params=self.params, data=data, files=files)
+        with open(file_path, "rb") as file_handle:
+            files = {"file": file_handle}
+            response = requests.post(publish_url, params=self.params, data=data, files=files)
+
         if response.status_code != 201:
             error_message = f"Failed to upload files. Error details: {response.json()}"
             raise Exception(error_message)

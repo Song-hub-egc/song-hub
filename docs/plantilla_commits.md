@@ -6,11 +6,11 @@ A continuación, se presenta cómo los integrantes del equipo tienen que realiza
 
 Cada commit debe seguir la siguiente estructura:
 
-- no usar emojis
+- no se debe usar emojis
 
-- <type>(<scope>): <breve resumen>
+- `<type>(<scope>): <breve resumen>`
 
-- <body (opcional, descripción más detallada)>
+- `<body (opcional, descripción más detallada)>`
 
 
 **Tipos permitidos (type):**
@@ -33,7 +33,7 @@ Cada commit debe seguir la siguiente estructura:
 
 git checkout -b feature/mi-nueva-funcionalidad
 
-- Antes de subir los cambios, asegurarase de que todos los tests pasen correctamente. 
+- Antes de subir los cambios de esta rama feature a la rama trunk, asegurarse de que todos los tests pasen correctamente y que la aplicación funcione correctamente. Lo mismo para pasar los cambios de trunk a main.
 
 rosemary test
 

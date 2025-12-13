@@ -20,7 +20,6 @@ from flask import (
 from flask_login import current_user, login_required
 
 from app.modules.dataset import dataset_bp
-from app.modules.dataset.forms import DataSetForm
 from app.modules.dataset.models import DSDownloadRecord
 from app.modules.dataset.services import (
     AuthorService,
@@ -44,21 +43,38 @@ ds_view_record_service = DSViewRecordService()
 
 
 @dataset_bp.route("/dataset/upload", methods=["GET", "POST"])
+@dataset_bp.route("/dataset/upload/<string:dataset_type>", methods=["GET", "POST"])
 @login_required
-def create_dataset():
-    form = DataSetForm()
-    if request.method == "POST":
+def create_dataset(dataset_type="uvl_dataset"):
+    # Map types to forms (this should probably be in a service or registry)
+    from app.modules.audiodataset.forms import AudioDatasetForm
+    from app.modules.featuremodel.forms import UVLDataSetForm
+    from app.modules.imagedataset.forms import ImageDatasetForm
 
+    form_classes = {
+        "uvl_dataset": UVLDataSetForm,
+        "image_dataset": ImageDatasetForm,
+        "audio_dataset": AudioDatasetForm,
+    }
+
+    if dataset_type not in form_classes:
+        abort(400, description="Invalid dataset type")
+
+    form = form_classes[dataset_type]()
+
+    if request.method == "POST":
         dataset = None
 
         if not form.validate_on_submit():
             return jsonify({"message": form.errors}), 400
 
         try:
-            logger.info("Creating dataset...")
+            logger.info(f"Creating dataset of type {dataset_type}...")
             dataset = dataset_service.create_from_form(form=form, current_user=current_user)
             logger.info(f"Created dataset: {dataset}")
             dataset_service.move_feature_models(dataset)
+            dataset_service.move_images(dataset)
+            dataset_service.move_audios(dataset)
         except Exception as exc:
             logger.exception(f"Exception while create dataset data in local {exc}")
             return jsonify({"Exception while create dataset data in local: ": str(exc)}), 400
@@ -81,9 +97,10 @@ def create_dataset():
             dataset_service.update_dsmetadata(dataset.ds_meta_data_id, deposition_id=deposition_id)
 
             try:
-                # iterate for each feature model (one feature model = one request to Zenodo)
-                for feature_model in dataset.feature_models:
-                    zenodo_service.upload_file(dataset, deposition_id, feature_model)
+                # Upload each dataset file (UVL or image) to Zenodo
+                dataset_files = dataset.files() if hasattr(dataset, "files") else []
+                for hubfile in dataset_files:
+                    zenodo_service.upload_dataset_file(hubfile, deposition_id)
 
                 # publish deposition
                 zenodo_service.publish_deposition(deposition_id)
@@ -103,7 +120,7 @@ def create_dataset():
         msg = "Everything works!"
         return jsonify({"message": msg}), 200
 
-    return render_template("dataset/upload_dataset.html", form=form)
+    return render_template("dataset/upload_dataset.html", form=form, dataset_type=dataset_type)
 
 
 @dataset_bp.route("/dataset/list", methods=["GET", "POST"])
@@ -122,8 +139,14 @@ def upload():
     file = request.files["file"]
     temp_folder = current_user.temp_folder()
 
-    if not file or not file.filename.endswith(".uvl"):
-        return jsonify({"message": "No valid file"}), 400
+    if not file:
+        return jsonify({"message": "No file provided"}), 400
+
+    allowed_extensions = {".uvl", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".mp3"}
+    file_ext = os.path.splitext(file.filename)[1].lower()
+
+    if file_ext not in allowed_extensions:
+        return jsonify({"message": f"Invalid file extension: {file_ext}"}), 400
 
     # create temp folder
     if not os.path.exists(temp_folder):
@@ -230,6 +253,9 @@ def download_dataset(dataset_id):
             download_cookie=user_cookie,
         )
 
+        # Increment download counter
+        dataset_service.increment_download_count(dataset_id)
+
     return resp
 
 
@@ -270,3 +296,31 @@ def get_unsynchronized_dataset(dataset_id):
         abort(404)
 
     return render_template("dataset/view_dataset.html", dataset=dataset)
+
+
+@dataset_bp.route("/datasets/<int:dataset_id>/stats", methods=["GET"])
+def get_dataset_stats(dataset_id):
+    """Get dataset statistics including downloads, views, etc."""
+    from app.modules.dataset.models import DSDownloadRecord, DSViewRecord
+
+    dataset = dataset_service.get_or_404(dataset_id)
+
+    # Get total views count
+    total_views = DSViewRecord.query.filter_by(dataset_id=dataset_id).count()
+
+    # Get total downloads count
+    total_downloads_records = DSDownloadRecord.query.filter_by(dataset_id=dataset_id).count()
+
+    return jsonify(
+        {
+            "dataset_id": dataset_id,
+            "title": dataset.ds_meta_data.title,
+            "download_count": dataset.download_count,
+            "total_download_records": total_downloads_records,
+            "total_views": total_views,
+            "created_at": dataset.created_at.isoformat(),
+            "files_count": dataset.get_files_count(),
+            "total_size_bytes": dataset.get_file_total_size(),
+            "publication_type": dataset.get_cleaned_publication_type(),
+        }
+    )
