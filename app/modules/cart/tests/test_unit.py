@@ -104,3 +104,13 @@ def test_cart_service_and_api(test_client):
     assert response.status_code == 200
     data = json.loads(response.data)
     assert data["count"] == 1
+
+
+# Test covering the existence of the Cart Page
+def test_cart_ui_route(test_client):
+    """
+    Test that the Cart UI route is accessible and renders the template.
+    """
+    response = test_client.get("/cart")
+    assert response.status_code == 200
+    assert b"My Cart" in response.data
