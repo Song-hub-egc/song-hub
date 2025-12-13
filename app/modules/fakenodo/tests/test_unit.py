@@ -127,9 +127,7 @@ def test_publish_new_version_after_adding_file(fakenodo_client):
     )
     assert upload_second.status_code == 201
 
-    publish_second_version = fakenodo_client.post(
-        f"/fakenodo/api/deposit/depositions/{deposition_id}/actions/publish"
-    )
+    publish_second_version = fakenodo_client.post(f"/fakenodo/api/deposit/depositions/{deposition_id}/actions/publish")
     assert publish_second_version.status_code == 202
     assert publish_second_version.get_json()["version"] == 2
 

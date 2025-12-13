@@ -1,5 +1,4 @@
 import pytest
-from flask import url_for
 
 from app import db
 from app.modules.auth.models import User

@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
