@@ -3,7 +3,6 @@ from typing import Optional
 
 from app import db
 from app.modules.cart.models import Cart, CartItem
-from app.modules.featuremodel.models import FeatureModel
 
 
 class CartRepository:
@@ -38,19 +37,13 @@ class CartRepository:
     def add_item(self, cart: Cart, feature_model_id: int) -> CartItem:
         """Add a feature model to the cart."""
         # Check if item already exists
-        existing_item = CartItem.query.filter_by(
-            cart_id=cart.id,
-            feature_model_id=feature_model_id
-        ).first()
+        existing_item = CartItem.query.filter_by(cart_id=cart.id, feature_model_id=feature_model_id).first()
 
         if existing_item:
             return existing_item
 
         # Create new cart item
-        cart_item = CartItem(
-            cart_id=cart.id,
-            feature_model_id=feature_model_id
-        )
+        cart_item = CartItem(cart_id=cart.id, feature_model_id=feature_model_id)
         db.session.add(cart_item)
 
         # Update cart timestamp
@@ -72,10 +65,7 @@ class CartRepository:
 
     def remove_item_by_feature_model(self, cart: Cart, feature_model_id: int) -> bool:
         """Remove an item from the cart by feature model ID."""
-        cart_item = CartItem.query.filter_by(
-            cart_id=cart.id,
-            feature_model_id=feature_model_id
-        ).first()
+        cart_item = CartItem.query.filter_by(cart_id=cart.id, feature_model_id=feature_model_id).first()
 
         if cart_item:
             db.session.delete(cart_item)
@@ -100,10 +90,7 @@ class CartRepository:
 
     def item_exists(self, cart: Cart, feature_model_id: int) -> bool:
         """Check if a feature model is already in the cart."""
-        return CartItem.query.filter_by(
-            cart_id=cart.id,
-            feature_model_id=feature_model_id
-        ).first() is not None
+        return CartItem.query.filter_by(cart_id=cart.id, feature_model_id=feature_model_id).first() is not None
 
     def merge_carts(self, session_cart: Cart, user_cart: Cart) -> None:
         """Merge session cart into user cart when user logs in."""
@@ -125,12 +112,14 @@ class CartRepository:
         for cart_item in cart.items:
             feature_model = cart_item.feature_model
             if feature_model and feature_model.fm_meta_data:
-                dataset = feature_model.data_set if hasattr(feature_model, 'data_set') else None
-                items.append({
-                    'cart_item_id': cart_item.id,
-                    'feature_model_id': feature_model.id,
-                    'feature_model': feature_model,
-                    'dataset': dataset,
-                    'added_at': cart_item.added_at
-                })
+                dataset = feature_model.data_set if hasattr(feature_model, "data_set") else None
+                items.append(
+                    {
+                        "cart_item_id": cart_item.id,
+                        "feature_model_id": feature_model.id,
+                        "feature_model": feature_model,
+                        "dataset": dataset,
+                        "added_at": cart_item.added_at,
+                    }
+                )
         return items

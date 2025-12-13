@@ -1,3 +1,5 @@
+import json
+
 from app.modules.auth.models import User
 from app.modules.cart.repositories import CartRepository
 from app.modules.dataset.models import DataSet, DSMetaData, PublicationType
@@ -56,3 +58,49 @@ def test_cart_repository_operations(test_client):
     # Test Clear
     repo.clear_cart(cart)
     assert repo.get_item_count(cart) == 0
+
+
+# Test covering Service logic and API Endpoints
+def test_cart_service_and_api(test_client):
+    """
+    Test the CartService and API endpoints.
+    """
+    from app import db
+
+    # Setup User & FeatureModel (Reuse simpler setup if possible, or repeat)
+    user = User(email="cart_service_test@example.com", password="password")
+    db.session.add(user)
+    db.session.commit()
+
+    ds_meta = DSMetaData(
+        title="Test DS Service", description="Desc", publication_type=PublicationType.OTHER, deposition_id=54321
+    )
+    db.session.add(ds_meta)
+    db.session.commit()
+
+    ds = DataSet(user_id=user.id, ds_meta_data_id=ds_meta.id)
+    db.session.add(ds)
+    db.session.commit()
+
+    fm_meta = FMMetaData(
+        uvl_filename="service.uvl", title="Service FM", description="Desc", publication_type=PublicationType.OTHER
+    )
+    db.session.add(fm_meta)
+    db.session.commit()
+
+    fm = FeatureModel(data_set_id=ds.id, fm_meta_data_id=fm_meta.id)
+    db.session.add(fm)
+    db.session.commit()
+
+    # 1. Test Adding via API (POST /cart/add/<id>)
+    # This implicitly tests the Service's add_to_cart method
+    response = test_client.post(f"/cart/add/{fm.id}")
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data["success"] is True
+
+    # 2. Test Getting Cart Count via API
+    response = test_client.get("/cart/count")
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data["count"] == 1
