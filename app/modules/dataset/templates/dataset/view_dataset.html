@@ -450,6 +450,10 @@
                                     onclick="viewFile({{ file.id }})">
                                     <i data-feather="play"></i> Preview
                                 </button>
+                                <button onclick="addAudioToCart({{ audio.id }})" class="btn btn-outline-success btn-sm"
+                                    style="border-radius: 5px;">
+                                    <i data-feather="shopping-cart"></i> Add to cart
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -475,6 +479,15 @@
             class="btn btn-outline-success mt-2" style="border-radius: 5px; width: 100%;">
             <i data-feather="shopping-cart" class="center-button-icon"></i>
             Add all models to cart ({{ dataset.feature_models|length }})
+        </button>
+        {% endif %}
+
+        {% if dataset.audios %}
+        <button
+            onclick="addAllAudiosToCart({{ dataset.id }}, [{% for audio in dataset.audios %}{{ audio.id }}{% if not loop.last %}, {% endif %}{% endfor %}])"
+            class="btn btn-outline-success mt-2" style="border-radius: 5px; width: 100%;">
+            <i data-feather="shopping-cart" class="center-button-icon"></i>
+            Add all audios to cart ({{ dataset.audios|length }})
         </button>
         {% endif %}
     </div>
@@ -725,6 +738,84 @@
 
         if (typeof showToast === 'function') {
             showToast(message || 'No models were added', addedCount > 0 ? 'success' : 'warning');
+        } else {
+            alert(message);
+        }
+
+        // Re-render feather icons for any newly added elements
+        feather.replace();
+    }
+
+    async function addAudioToCart(audioId) {
+        try {
+            const response = await fetch(`/cart/add/audio/${audioId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                // Update cart count if exists
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
+                }
+                // Show success feedback
+                if (typeof showToast === 'function') {
+                    showToast('Added to cart!', 'success');
+                } else {
+                    alert('Added to cart!');
+                }
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'warning');
+                } else {
+                    alert(data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+        }
+    }
+
+    async function addAllAudiosToCart(datasetId, audioIds) {
+        let addedCount = 0;
+        let alreadyInCart = 0;
+
+        // Add models sequentially to avoid session conflicts
+        for (const audioId of audioIds) {
+            try {
+                const response = await fetch(`/cart/add/audio/${audioId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    addedCount++;
+                } else if (data.message && data.message.includes('already')) {
+                    alreadyInCart++;
+                }
+            } catch (error) {
+                console.error(`Error adding audio ${audioId} to cart:`, error);
+            }
+        }
+
+        // Update cart count after all models are processed
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+        }
+
+        // Show summary message
+        let message = '';
+        if (addedCount > 0) {
+            message += `✓ Added ${addedCount} audio file${addedCount > 1 ? 's' : ''} to cart! `;
+        }
+        if (alreadyInCart > 0) {
+            message += `${alreadyInCart} already in cart.`;
+        }
+
+        if (typeof showToast === 'function') {
+            showToast(message || 'No audio files were added', addedCount > 0 ? 'success' : 'warning');
         } else {
             alert(message);
         }

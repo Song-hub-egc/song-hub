@@ -36,9 +36,12 @@
                         <div class="row align-items-center">
                             <div class="col-md-8">
                                 <h5 class="mb-1">
+                                    {% if item.type == 'audio' %}
+                                    <i data-feather="music" class="feather-sm text-primary"></i>
+                                    {% else %}
                                     <i data-feather="file-text" class="feather-sm text-primary"></i>
-                                    {{ item.feature_model.fm_meta_data.title if item.feature_model.fm_meta_data else
-                                    'Untitled Model' }}
+                                    {% endif %}
+                                    {{ item.title if item.title else 'Untitled' }}
                                 </h5>
                                 {% if item.dataset %}
                                 <p class="text-muted small mb-1">
@@ -47,7 +50,7 @@
                                         item.dataset.ds_meta_data.title }}</a>
                                 </p>
                                 {% endif %}
-                                {% if item.feature_model.fm_meta_data %}
+                                {% if item.type == 'feature_model' and item.feature_model.fm_meta_data %}
                                 <p class="text-muted small mb-0">
                                     <i data-feather="user" class="feather-xs"></i>
                                     {% if item.feature_model.fm_meta_data.authors %}
