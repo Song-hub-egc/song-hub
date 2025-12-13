@@ -12,10 +12,8 @@ Run from project root:
 """
 
 from locust import HttpUser, TaskSet, between, task
-
 from core.environment.host import get_host_for_locust_testing
 from core.locust.common import get_csrf_token
-
 
 class DownloadCounterBehavior(TaskSet):
     """
@@ -122,12 +120,6 @@ class DownloadCounterUser(HttpUser):
 # Legacy behavior for backward compatibility
 class DatasetBehavior(TaskSet):
     """Legacy dataset behavior (kept for compatibility)."""
-
-    @task
-    def dataset(self):
-        response = self.client.get("/dataset/upload")
-        get_csrf_token(response)
-
     @task
     def trending_home(self):
         self.client.get("/", name="trending_home")
