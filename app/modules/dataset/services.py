@@ -142,10 +142,16 @@ class DataSetService(BaseService):
             dataset_class = DataSet
             if hasattr(form, "feature_models"):
                 from app.modules.featuremodel.models import UVLDataset
+
                 dataset_class = UVLDataset
             elif hasattr(form, "images"):
                 from app.modules.imagedataset.models import ImageDataset
+
                 dataset_class = ImageDataset
+            elif hasattr(form, "audios"):
+                from app.modules.audiodataset.models import AudioDataset
+
+                dataset_class = AudioDataset
 
             dataset = dataset_class(user_id=current_user.id, ds_meta_data_id=dsmetadata.id)
             self.repository.session.add(dataset)
@@ -172,53 +178,90 @@ class DataSetService(BaseService):
                         commit=False, name=uvl_filename, checksum=checksum, size=size, feature_model_id=fm.id
                     )
                     fm.files.append(file)
-            
+
             elif hasattr(form, "images"):
-                from app.modules.imagedataset.models import Image, ImageMetaData
                 from app.modules.dataset.models import PublicationType
+                from app.modules.imagedataset.models import Image, ImageMetaData
 
                 for image_form in form.images:
                     filename = image_form.filename.data
-                    # Create generic metadata for image (reusing what we can or creating new)
                     image_metadata = ImageMetaData(
                         filename=filename,
                         title=image_form.title.data,
                         description=image_form.desc.data,
-                        publication_type=PublicationType.NONE,  # Defaulting for now
+                        publication_type=PublicationType.NONE,
                         tags="",
-                        publication_doi=""
+                        publication_doi="",
                     )
 
-                    # Add main author to image metadata as well for now
                     author = self.author_repository.create(commit=False, image_meta_data_id=None, **main_author)
                     image_metadata.authors.append(author)
 
                     self.repository.session.add(image_metadata)
-                    self.repository.session.flush()  # to get ID
+                    self.repository.session.flush()
 
-                    # Fix author FK
                     author.image_meta_data_id = image_metadata.id
 
                     image = Image(data_set_id=dataset.id, image_meta_data_id=image_metadata.id)
                     self.repository.session.add(image)
                     self.repository.session.flush()
 
-                    # associated files
                     file_path = os.path.join(current_user.temp_folder(), filename)
                     if os.path.exists(file_path):
                         checksum, size = calculate_checksum_and_size(file_path)
 
-                        # Hubfile creation - note we need to pass image_id
-                        # HubfileRepository might need update to accept image_id or we create manually
                         file = self.hubfilerepository.create(
                             commit=False,
                             name=filename,
                             checksum=checksum,
                             size=size,
                             image_id=image.id,
-                            feature_model_id=None
+                            feature_model_id=None,
                         )
                         image.files.append(file)
+                    else:
+                        logger.warning(f"File {filename} not found in temp folder")
+
+            elif hasattr(form, "audios"):
+                from app.modules.audiodataset.models import Audio, AudioMetaData
+                from app.modules.dataset.models import PublicationType
+
+                for audio_form in form.audios:
+                    filename = audio_form.filename.data
+                    audio_metadata = AudioMetaData(
+                        filename=filename,
+                        title=audio_form.title.data,
+                        description=audio_form.desc.data,
+                        publication_type=PublicationType.NONE,
+                        tags="",
+                        publication_doi="",
+                    )
+
+                    author = self.author_repository.create(commit=False, audio_meta_data_id=None, **main_author)
+                    audio_metadata.authors.append(author)
+
+                    self.repository.session.add(audio_metadata)
+                    self.repository.session.flush()
+
+                    author.audio_meta_data_id = audio_metadata.id
+
+                    audio = Audio(data_set_id=dataset.id, audio_meta_data_id=audio_metadata.id)
+                    self.repository.session.add(audio)
+                    self.repository.session.flush()
+
+                    file_path = os.path.join(current_user.temp_folder(), filename)
+                    if os.path.exists(file_path):
+                        checksum, size = calculate_checksum_and_size(file_path)
+
+                        file = self.hubfilerepository.create(
+                            commit=False,
+                            name=filename,
+                            checksum=checksum,
+                            size=size,
+                            audio_id=audio.id,
+                            feature_model_id=None,
+                        )
+                        audio.files.append(file)
                     else:
                         logger.warning(f"File {filename} not found in temp folder")
 
@@ -242,6 +285,22 @@ class DataSetService(BaseService):
         if hasattr(dataset, "images"):
             for image in dataset.images:
                 filename = image.image_meta_data.filename
+                source_path = os.path.join(source_dir, filename)
+                if os.path.exists(source_path):
+                    shutil.move(source_path, dest_dir)
+
+    def move_audios(self, dataset: DataSet):
+        current_user = AuthenticationService().get_authenticated_user()
+        source_dir = current_user.temp_folder()
+
+        working_dir = os.getenv("WORKING_DIR", "")
+        dest_dir = os.path.join(working_dir, "uploads", f"user_{current_user.id}", f"dataset_{dataset.id}")
+
+        os.makedirs(dest_dir, exist_ok=True)
+
+        if hasattr(dataset, "audios"):
+            for audio in dataset.audios:
+                filename = audio.audio_meta_data.filename
                 source_path = os.path.join(source_dir, filename)
                 if os.path.exists(source_path):
                     shutil.move(source_path, dest_dir)

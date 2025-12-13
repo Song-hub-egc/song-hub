@@ -15,6 +15,7 @@ class Hubfile(db.Model):
     size = db.Column(db.Integer, nullable=False)
     feature_model_id = db.Column(db.Integer, db.ForeignKey("feature_model.id"), nullable=True)
     image_id = db.Column(db.Integer, db.ForeignKey("image.id"), nullable=True)
+    audio_id = db.Column(db.Integer, db.ForeignKey("audio.id"), nullable=True)
 
     def get_formatted_size(self):
         from app.modules.dataset.services import SizeService

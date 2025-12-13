@@ -12,8 +12,8 @@
         <select class="form-control" id="dataset_type_selector"
             onchange="window.location.href='/dataset/upload/' + this.value">
             <option value="uvl_dataset" {% if dataset_type=='uvl_dataset' %}selected{% endif %}>UVL Dataset</option>
-            <option value="image_dataset" {% if dataset_type=='image_dataset' %}selected{% endif %}>Image Dataset
-            </option>
+            <option value="image_dataset" {% if dataset_type=='image_dataset' %}selected{% endif %}>Image Dataset</option>
+            <option value="audio_dataset" {% if dataset_type=='audio_dataset' %}selected{% endif %}>Audio Dataset</option>
         </select>
     </div>
 </div>
@@ -228,6 +228,8 @@
         <h1 class="h3 mb-3 mt-2">
             {% if dataset_type == 'image_dataset' %}
             Images
+            {% elif dataset_type == 'audio_dataset' %}
+            Audio files
             {% else %}
             UVL models
             {% endif %}
@@ -249,7 +251,7 @@
                     url: "/dataset/file/upload",
                     paramName: 'file',
                     maxFilesize: 10,
-                    acceptedFiles: "{% if dataset_type == 'image_dataset' %}image/*{% else %}.uvl{% endif %}",
+                    acceptedFiles: "{% if dataset_type == 'image_dataset' %}image/*{% elif dataset_type == 'audio_dataset' %}audio/mpeg,.mp3{% else %}.uvl{% endif %}",
                     init: function () {
 
                         let fileList = document.getElementById('file-list');
@@ -263,6 +265,8 @@
                             let valid = false;
                             if (dataset_type === 'image_dataset') {
                                 if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext)) valid = true;
+                            } else if (dataset_type === 'audio_dataset') {
+                                if (['mp3'].includes(ext)) valid = true;
                             } else {
                                 if (ext === 'uvl') valid = true;
                             }
@@ -393,6 +397,28 @@
                                                     <div class="mb-3">
                                                         <label class="form-label">Description</label>
                                                         <textarea rows="4" class="form-control" name="images-${formUniqueId}-desc"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    `;
+                            } else if (dataset_type === 'audio_dataset') {
+                                formContainer.innerHTML = `
+                                    <div class="row">
+                                        <input type="hidden" value="${response.filename}" name="audios-${formUniqueId}-filename">
+                                        <div class="col-12">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Title</label>
+                                                        <input type="text" class="form-control" name="audios-${formUniqueId}-title">
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Description</label>
+                                                        <textarea rows="4" class="form-control" name="audios-${formUniqueId}-desc"></textarea>
                                                     </div>
                                                 </div>
                                             </div>

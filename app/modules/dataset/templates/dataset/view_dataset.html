@@ -385,6 +385,45 @@
             </div>
             {% endfor %}
             {% endfor %}
+
+            {% elif dataset.dataset_type == 'audio_dataset' %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <h4 style="margin-bottom: 0px">Audio files</h4>
+                        <h4 style="margin-bottom: 0px;"><span class="badge bg-dark">{{ dataset.get_files_count()
+                                }}</span></h4>
+                    </div>
+                </div>
+            </div>
+
+            {% for audio in dataset.audios %}
+            {% for file in audio.files %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-8">
+                                <i data-feather="music"></i> {{ file.name }}
+                                <br>
+                                <small class="text-muted">({{ file.get_formatted_size() }})</small>
+                            </div>
+                            <div class="col-4 text-end">
+                                <a href="{{ url_for('hubfile.download_file', file_id=file.id) }}"
+                                    class="btn btn-outline-primary btn-sm" style="border-radius: 5px;">
+                                    <i data-feather="download"></i> Download
+                                </a>
+                                <button class="btn btn-outline-secondary btn-sm" style="border-radius: 5px;"
+                                    onclick="viewFile({{ file.id }})">
+                                    <i data-feather="play"></i> Preview
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
             {% endif %}
 
         </div>
@@ -419,8 +458,15 @@
             </div>
             <div class="modal-body" style="overflow-y: auto; height: calc(100vh - 50px);">
                 <pre id="fileContent"
-                    style="height: 100%; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; padding: 20px; border-radius: 5px; border: 1px solid #ccc;"></pre>
-
+                    style="display:none; height: 100%; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; padding: 20px; border-radius: 5px; border: 1px solid #ccc;"></pre>
+                <div id="fileImageWrapper" style="display:none; text-align:center;">
+                    <img id="fileImage" src="" alt="File preview" style="max-width:100%; max-height:70vh; border-radius:4px;"/>
+                </div>
+                <div id="fileAudioWrapper" style="display:none; text-align:center;">
+                    <audio id="fileAudio" controls style="width:100%; margin-top:10px;">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
             </div>
         </div>
     </div>
@@ -439,11 +485,48 @@
 
     function viewFile(fileId) {
         fetch(`/file/view/${fileId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('fileContent').textContent = data.content;
+            .then(async response => {
+                const contentType = response.headers.get('Content-Type') || '';
                 currentFileId = fileId;
                 document.getElementById('downloadButton').href = `/file/download/${fileId}`;
+
+                const fileContentEl = document.getElementById('fileContent');
+                const fileImageWrapper = document.getElementById('fileImageWrapper');
+                const fileImageEl = document.getElementById('fileImage');
+                const fileAudioWrapper = document.getElementById('fileAudioWrapper');
+                const fileAudioEl = document.getElementById('fileAudio');
+
+                // Reset displays
+                fileContentEl.style.display = 'none';
+                fileImageWrapper.style.display = 'none';
+                fileAudioWrapper.style.display = 'none';
+                fileImageEl.src = '';
+                fileAudioEl.removeAttribute('src');
+                fileAudioEl.load();
+
+                if (contentType.includes('application/json')) {
+                    const data = await response.json();
+                    fileContentEl.textContent = data.content || '';
+                    fileContentEl.style.display = 'block';
+                } else if (contentType.startsWith('image/')) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    fileImageEl.src = url;
+                    fileImageWrapper.style.display = 'block';
+                } else if (contentType.startsWith('audio/')) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    fileAudioEl.src = url;
+                    fileAudioWrapper.style.display = 'block';
+                    fileAudioEl.load();
+                    fileAudioEl.play();
+                } else {
+                    // Fallback: try to read as text
+                    const text = await response.text();
+                    fileContentEl.textContent = text;
+                    fileContentEl.style.display = 'block';
+                }
+
                 var modal = new bootstrap.Modal(document.getElementById('fileViewerModal'));
                 modal.show();
             })

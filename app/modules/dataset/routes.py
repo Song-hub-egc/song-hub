@@ -21,8 +21,6 @@ from flask_login import current_user, login_required
 
 from app.modules.dataset import dataset_bp
 from app.modules.dataset.models import DSDownloadRecord
-
-
 from app.modules.dataset.services import (
     AuthorService,
     DataSetService,
@@ -49,14 +47,16 @@ ds_view_record_service = DSViewRecordService()
 @login_required
 def create_dataset(dataset_type="uvl_dataset"):
     # Map types to forms (this should probably be in a service or registry)
+    from app.modules.audiodataset.forms import AudioDatasetForm
     from app.modules.featuremodel.forms import UVLDataSetForm
     from app.modules.imagedataset.forms import ImageDatasetForm
 
     form_classes = {
         "uvl_dataset": UVLDataSetForm,
         "image_dataset": ImageDatasetForm,
+        "audio_dataset": AudioDatasetForm,
     }
-    
+
     if dataset_type not in form_classes:
         abort(400, description="Invalid dataset type")
 
@@ -74,6 +74,7 @@ def create_dataset(dataset_type="uvl_dataset"):
             logger.info(f"Created dataset: {dataset}")
             dataset_service.move_feature_models(dataset)
             dataset_service.move_images(dataset)
+            dataset_service.move_audios(dataset)
         except Exception as exc:
             logger.exception(f"Exception while create dataset data in local {exc}")
             return jsonify({"Exception while create dataset data in local: ": str(exc)}), 400
@@ -96,9 +97,10 @@ def create_dataset(dataset_type="uvl_dataset"):
             dataset_service.update_dsmetadata(dataset.ds_meta_data_id, deposition_id=deposition_id)
 
             try:
-                # iterate for each feature model (one feature model = one request to Zenodo)
-                for feature_model in dataset.feature_models:
-                    zenodo_service.upload_file(dataset, deposition_id, feature_model)
+                # Upload each dataset file (UVL or image) to Zenodo
+                dataset_files = dataset.files() if hasattr(dataset, "files") else []
+                for hubfile in dataset_files:
+                    zenodo_service.upload_dataset_file(hubfile, deposition_id)
 
                 # publish deposition
                 zenodo_service.publish_deposition(deposition_id)
@@ -121,7 +123,6 @@ def create_dataset(dataset_type="uvl_dataset"):
     return render_template("dataset/upload_dataset.html", form=form, dataset_type=dataset_type)
 
 
-
 @dataset_bp.route("/dataset/list", methods=["GET", "POST"])
 @login_required
 def list_dataset():
@@ -141,7 +142,7 @@ def upload():
     if not file:
         return jsonify({"message": "No file provided"}), 400
 
-    allowed_extensions = {".uvl", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp"}
+    allowed_extensions = {".uvl", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".mp3"}
     file_ext = os.path.splitext(file.filename)[1].lower()
 
     if file_ext not in allowed_extensions:

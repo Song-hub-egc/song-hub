@@ -37,6 +37,7 @@ class Author(db.Model):
     ds_meta_data_id = db.Column(db.Integer, db.ForeignKey("ds_meta_data.id"))
     fm_meta_data_id = db.Column(db.Integer, db.ForeignKey("fm_meta_data.id"))
     image_meta_data_id = db.Column(db.Integer, db.ForeignKey("image_meta_data.id"))
+    audio_meta_data_id = db.Column(db.Integer, db.ForeignKey("audio_meta_data.id"))
 
     def to_dict(self):
         return {"name": self.name, "affiliation": self.affiliation, "orcid": self.orcid}
@@ -77,10 +78,7 @@ class DataSet(db.Model):
 
     dataset_type = db.Column(db.String(50))
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'dataset',
-        'polymorphic_on': dataset_type
-    }
+    __mapper_args__ = {"polymorphic_identity": "dataset", "polymorphic_on": dataset_type}
 
     def name(self):
         return self.ds_meta_data.title
@@ -103,7 +101,6 @@ class DataSet(db.Model):
 
     def get_file_total_size(self):
         return 0
-
 
     def get_file_total_size_for_human(self):
         from app.modules.dataset.services import SizeService
@@ -132,7 +129,6 @@ class DataSet(db.Model):
             "download_count": self.download_count,
             "zenodo": self.get_zenodo_url(),
             "files": [file.to_dict() for file in self.files()],
-
             "files_count": self.get_files_count(),
             "total_size_in_bytes": self.get_file_total_size(),
             "total_size_in_human_format": self.get_file_total_size_for_human(),

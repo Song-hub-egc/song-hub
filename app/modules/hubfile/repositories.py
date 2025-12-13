@@ -24,11 +24,24 @@ class HubfileRepository(BaseRepository):
             )
         elif hubfile.image_id:
             from app.modules.imagedataset.models import Image, ImageDataset
+
             return (
                 db.session.query(User)
                 .join(DataSet)
                 .join(ImageDataset)
                 .join(Image)
+                .join(Hubfile)
+                .filter(Hubfile.id == hubfile.id)
+                .first()
+            )
+        elif hubfile.audio_id:
+            from app.modules.audiodataset.models import Audio, AudioDataset
+
+            return (
+                db.session.query(User)
+                .join(DataSet)
+                .join(AudioDataset)
+                .join(Audio)
                 .join(Hubfile)
                 .filter(Hubfile.id == hubfile.id)
                 .first()
@@ -45,6 +58,17 @@ class HubfileRepository(BaseRepository):
                 db.session.query(DataSet)
                 .join(ImageDataset)
                 .join(Image)
+                .join(Hubfile)
+                .filter(Hubfile.id == hubfile.id)
+                .first()
+            )
+        elif hubfile.audio_id:
+            from app.modules.audiodataset.models import Audio, AudioDataset
+
+            return (
+                db.session.query(DataSet)
+                .join(AudioDataset)
+                .join(Audio)
                 .join(Hubfile)
                 .filter(Hubfile.id == hubfile.id)
                 .first()
