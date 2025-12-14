@@ -40,6 +40,8 @@ def initialize_driver():
 
     # --- Remote mode (Selenium Grid) ---
     if working_dir == "/app/" or use_selenium_grid:
+        from selenium.webdriver.remote.file_detector import LocalFileDetector
+
         if driver_name == "chrome":
             options = webdriver.ChromeOptions()
             # options.add_argument("--headless")  # Commented to show browser
@@ -52,6 +54,8 @@ def initialize_driver():
             driver = webdriver.Remote(command_executor=selenium_hub_url, options=options)
         else:
             raise Exception(f"Driver '{driver_name}' not supported.")
+        
+        driver.file_detector = LocalFileDetector()
         return driver
 
     # --- Local mode ---

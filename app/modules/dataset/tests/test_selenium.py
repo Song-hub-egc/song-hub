@@ -34,30 +34,26 @@ def test_upload_dataset():
     try:
         host = get_host_for_selenium_testing()
 
-        # Open the login page
+
         driver.get(f"{host}/login")
         wait_for_page_to_load(driver)
 
-        # Find the username and password field and enter the values
         email_field = driver.find_element(By.NAME, "email")
         password_field = driver.find_element(By.NAME, "password")
 
         email_field.send_keys("user1@example.com")
         password_field.send_keys("1234")
 
-        # Send the form
+
         password_field.send_keys(Keys.RETURN)
         time.sleep(4)
         wait_for_page_to_load(driver)
 
-        # Count initial datasets
         initial_datasets = count_datasets(driver, host)
 
-        # Open the upload dataset
         driver.get(f"{host}/dataset/upload")
         wait_for_page_to_load(driver)
 
-        # Find basic info and UVL model and fill values
         title_field = driver.find_element(By.NAME, "title")
         title_field.send_keys("Title")
         desc_field = driver.find_element(By.NAME, "desc")
@@ -65,11 +61,11 @@ def test_upload_dataset():
         tags_field = driver.find_element(By.NAME, "tags")
         tags_field.send_keys("tag1,tag2")
 
-        # Add two authors and fill
+
         add_author_button = driver.find_element(By.ID, "add_author")
-        add_author_button.send_keys(Keys.RETURN)
+        driver.execute_script("arguments[0].click();", add_author_button)
         wait_for_page_to_load(driver)
-        add_author_button.send_keys(Keys.RETURN)
+        driver.execute_script("arguments[0].click();", add_author_button)
         wait_for_page_to_load(driver)
 
         name_field0 = driver.find_element(By.NAME, "authors-0-name")
@@ -84,29 +80,28 @@ def test_upload_dataset():
         affiliation_field1 = driver.find_element(By.NAME, "authors-1-affiliation")
         affiliation_field1.send_keys("Club1")
 
-        # Obtén las rutas absolutas de los archivos
+
         file1_path = os.path.abspath("app/modules/dataset/uvl_examples/file1.uvl")
         file2_path = os.path.abspath("app/modules/dataset/uvl_examples/file2.uvl")
 
-        # Subir el primer archivo
+
         dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
         dropzone.send_keys(file1_path)
         wait_for_page_to_load(driver)
 
-        # Subir el segundo archivo
+
         dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
         dropzone.send_keys(file2_path)
         wait_for_page_to_load(driver)
 
-        # Add authors in UVL models - wait for the UI to render the buttons
         try:
             show_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "0_button")))
-            show_button.click()
+            driver.execute_script("arguments[0].click();", show_button)
 
             add_author_uvl_button = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.ID, "0_form_authors_button"))
             )
-            add_author_uvl_button.click()
+            driver.execute_script("arguments[0].click();", add_author_uvl_button)
             wait_for_page_to_load(driver)
         except TimeoutException:
             # Make the failure clearer in test output
@@ -117,16 +112,16 @@ def test_upload_dataset():
         affiliation_field = driver.find_element(By.NAME, "feature_models-0-authors-2-affiliation")
         affiliation_field.send_keys("Club3")
 
-        # Check I agree and send form
+
         check = driver.find_element(By.ID, "agreeCheckbox")
-        check.send_keys(Keys.SPACE)
+        driver.execute_script("arguments[0].click();", check)
         wait_for_page_to_load(driver)
 
         upload_btn = driver.find_element(By.ID, "upload_button")
-        upload_btn.send_keys(Keys.RETURN)
+        driver.execute_script("arguments[0].scrollIntoView();", upload_btn)
+        driver.execute_script("arguments[0].click();", upload_btn)
         wait_for_page_to_load(driver)
 
-        # Wait for the dataset to appear in the list (polling up to 10s).
         final_datasets = None
         deadline = time.time() + 10
         while time.time() < deadline:
@@ -135,7 +130,6 @@ def test_upload_dataset():
                 if final_datasets == initial_datasets + 1:
                     break
             except Exception:
-                # Ignore transient errors while polling
                 pass
             time.sleep(0.5)
 
@@ -148,7 +142,6 @@ def test_upload_dataset():
 
     finally:
 
-        # Close the browser
         close_driver(driver)
 
 
@@ -169,25 +162,22 @@ def test_trending_datasets():
         wait_for_page_to_load(driver)
         time.sleep(2)
 
-        # Get initial download count
         try:
             download_element = driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple")
             initial_download = int(download_element.text.split(" ")[0])
         except NoSuchElementException:
             initial_download = 0
 
-        # Find any available download link by href pattern
         try:
             download_link = driver.find_element(By.XPATH, "//a[contains(@href, '/dataset/download/')]")
             download_link.click()
         except NoSuchElementException:
             raise AssertionError("No download link found on the trending datasets page")
 
-        time.sleep(2)  # Wait for download to process
+        time.sleep(2)  
         driver.get(host)
         wait_for_page_to_load(driver)
 
-        # Verify the download counter did not decrease; allow same value
         try:
             updated_downloads = driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple")
             updated_text = updated_downloads.text.split(" ")[0]
@@ -201,8 +191,6 @@ def test_trending_datasets():
         print("Test passed!")
 
     finally:
-        # Close the browser
         close_driver(driver)
 
 
-# Tests are executed by pytest; do not invoke them at import time.
