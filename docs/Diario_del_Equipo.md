@@ -22,42 +22,64 @@
 
 ## Resumen total de reuniones
 
-- **Total de reuniones (TR):** 1  
+- **Total de reuniones (TR):** 4 
 - **Total de reuniones presenciales (TRP):** 0  
-- **Total de reuniones virtuales (TRV):** 1 
+- **Total de reuniones virtuales (TRV):** 4 
 - **Total de tiempo empleado en reuniones presenciales (TTRP):** 0h  
-- **Total de tiempo empleado en reuniones virtuales (TTRV):** 0h  
+- **Total de tiempo empleado en reuniones virtuales (TTRV):** 11h  
 
 ---
 
 ## Actas de acuerdos
 
-### ACTA 2024-01 — Acta fundacional  
-**Fecha:** 12/10/2025  
-**Asistentes:** Todos los miembros del equipo  
+### ACTA 2025-01
+
+**Asistentes:** Jesús Villalba Fernández, Rares Nicolae Petre, Pablo Pérez Gaspar, Diego Manzanos Anento, Miguel Ángel Gómez Vela, Daniel del Castillo Piñero.
 
 #### Acuerdos tomados
+**Acuerdo 2025-01-01:** Redacción del Acta Fundacional y normas básicas de trabajo, canales de comunicación (Whatsapp y Discord) y toma de decisiones.
+**Acuerdo 2025-01-02:** Compromiso del equipo de mantener un seguimiento del progreso y resolución de incidencias.
 
-**Acuerdo 2024-01-01:** Se establecen las siguientes reglas básicas de trabajo:  
-- Asistencia y participación obligatoria a las reuniones, avisando con antelación en caso de ausencia.  
-- Comunicación interna mediante *Discord* y *WhatsApp*, con respuesta esperada en menos de 24 horas.  
-- Reparto equitativo de tareas según habilidades y disponibilidad.  
-- Las decisiones se tomarán por consenso, y en caso de empate, el coordinador decidirá.
+---
 
-**Acuerdo 2024-01-02:** Se define el procedimiento de gestión de conflictos:  
-- Si hay falta de participación por más de dos semanas, se notificará al miembro y se informará al coordinador.  
-- Las diferencias de opinión se resolverán por votación si no hay consenso.  
-- El coordinador fomentará la cooperación ante diferencias de nivel o motivación.
+### ACTA 2025-02
 
-**Acuerdo 2024-01-03:** Se establecen sanciones internas progresivas:  
-1. Aviso formal en reunión.  
-2. Notificación al coordinador.  
-3. Intervención del coordinador y posible baja del equipo.  
-En casos graves se podrá acudir directamente al coordinador.
+**Asistentes:** Jesús Villalba Fernández, Rares Nicolae Petre, Pablo Pérez Gaspar, Diego Manzanos Anento, Miguel Ángel Gómez Vela, Daniel del Castillo Piñero. 
 
-**Acuerdo 2024-01-04:** El acta fundacional podrá modificarse solo por consenso unánime y deberá firmarse por todos los miembros tras cualquier cambio.
 
-**Acuerdo 2024-01-05:** Todos los miembros firman el compromiso de cumplir las normas y mantener un ambiente de respeto y responsabilidad.
+#### Acuerdos tomados
+- **Acuerdo 2025-02-01:** Definición del repositorio oficial del proyecto y sus permisos de acceso: https://github.com/Song-hub-egc/song-hub.git
+- **Acuerdo 2025-02-02:** Resetear el historial de commits.
+- **Acuerdo 2025-02-03:** Elección de los work items.
+
+---
+
+### ACTA 2025-03
+
+**Asistentes:** Jesús Villalba Fernández, Rares Nicolae Petre, Pablo Pérez Gaspar, Diego Manzanos Anento, Miguel Ángel Gómez Vela, Daniel del Castillo Piñero.
+
+
+#### Acuerdos tomados
+- **Acuerdo 2025-03-01:** Elaboración de los mockups y presentación para el M1.
+
+---
+
+### ACTA 2025-04
+ 
+**Asistentes:** Jesús Villalba Fernández, Rares Nicolae Petre, Pablo Pérez Gaspar, Diego Manzanos Anento, Miguel Ángel Gómez Vela, Daniel del Castillo Piñero. 
+
+#### Acuerdos tomados
+- **Acuerdo 2025-04-01:** Reparto y asignación de los work items.
+
+---
+
+### ACTA 2025-05
+ 
+**Asistentes:** Jesús Villalba Fernández, Rares Nicolae Petre, Pablo Pérez Gaspar, Diego Manzanos Anento, Miguel Ángel Gómez Vela, Daniel del Castillo Piñero.
+
+#### Acuerdos tomados
+- **Acuerdo 2025-05-01:** Corrección final del proyecto de algunos tests del selenium.
+- **Acuerdo 2025-05-02:** Preparación de la versión final para entrega y grabación del vídeo.
 
 ---
 
@@ -70,8 +92,4 @@ En casos graves se podrá acudir directamente al coordinador.
 | Daniel del Castillo Piñero | ![alt text](firmas/image-2.png) |
 | Pablo Pérez Gaspar | ![alt text](firmas/image-3.png) |
 | Diego Manzanos Anento | ![alt text](firmas/image-4.png) |
-| Miguel Ángel Gómez Vela *(Coordinador)* | ![alt text](firmas/image-5.png) |
-
----
-
-**Documento basado en:** ACTA FUNDACIONAL DEL EQUIPO (12/10/2025)  
+| Miguel Ángel Gómez Vela | ![alt text](firmas/image-5.png) |
