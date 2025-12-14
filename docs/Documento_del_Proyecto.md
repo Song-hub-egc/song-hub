@@ -14,7 +14,10 @@
 **Última edición:** 10/12/2025
 
 ## Indicadores del proyecto
-Incluye enlaces a evidencias (gráficas de git, test, issues, CI, etc.).
+Enlaces de evidencias: 
+- Tablero de issues: https://github.com/orgs/Song-hub-egc/projects/3 
+- Contributors (gráfica de commits y líneas por persona): https://github.com/Song-hub-egc/song-hub/graphs/contributors 
+                    
 
 | Miembro               | Horas | Commits | LoC | Test | Issues | Work Item principal       | Dificultad |
 |-----------------------|------:|--------:|----:|-----:|-------:|---------------------------|-----------:|
@@ -23,7 +26,7 @@ Incluye enlaces a evidencias (gráficas de git, test, issues, CI, etc.).
 | Manzanos Anento, Diego     |  HH   |   XX    | YY  |  ZZ  |  II    | Breve descripción         | H/M/L      |
 | Pérez Gaspar, Pablo      |  HH   |   XX    | YY  |  ZZ  |  II    | Breve descripción         | H/M/L      |
 | Petre, Rares Nicolae    |  HH   |   XX    | YY  |  ZZ  |  II    | Breve descripción         | H/M/L      |
-| Villalba Fernández, Jesús     |  72   |   33    | 2436  |    |  18    | Breve descripción         | H |
+| Villalba Fernández, Jesús     |  72   |   33    | 2436  |    |  18    | Trenging datasets, fakenodo, prehooks, workflows, documentación        | H |
 | **TOTAL**             | tHH   |  tXX    | tYY | tZZ  | tII    | Resumen WI                | H(X)/M(Y)/L(Z) |
 
 - **Horas:** esfuerzo estimado/registrado por persona. 
@@ -36,14 +39,14 @@ Incluye enlaces a evidencias (gráficas de git, test, issues, CI, etc.).
 
 ## Integración con otros equipos
 
-    No ha habido integración con otros equipos.
+No ha habido integración con otros equipos externos al grupo; todo el trabajo se ejecutó de forma autónoma dentro de la célula Song-Hub.
 
 ## Resumen ejecutivo 
 
 El presente documento describe el proceso de refactorización y mejora del sistema UVLHUB, transformándolo en Song-Hub. El objetivo principal ha sido potenciar su rendimiento, seguridad y facilidad de uso, evolucionando de un repositorio genérico de feature models a un entorno especializado en la gestión y distribución de datasets musicales.
 Durante el desarrollo, se ha trabajado en la mejora de la estructura interna del sistema, la incorporación de nuevas funcionalidades y la adopción de metodologías más eficientes de trabajo colaborativo.
 
-### Evolución y Cambios en el Proyecto
+### Evolución del Proyecto
 
 A lo largo del desarrollo de Song-Hub, se han aplicado múltiples mejoras tanto funcionales como técnicas que han transformado significativamente la plataforma original. Las principales novedades implementadas incluyen:
 
@@ -123,78 +126,78 @@ En resumen, Song-Hub representa una transformación exitosa de UVLHUB hacia una 
 ## Entorno de desarrollo (≈800 palabras)
 
 ### Visión general y sistemas operativos
-El desarrollo de Song-Hub se ha realizado en Visual Studio principalmente con Python 3.12 y Flask, apoyado en SQLAlchemy para el acceso a datos y MariaDB como base de datos relacional. Para pruebas funcionales y de carga se emplean Selenium y Locust, y toda la aplicación se dockeriza para asegurar reproducibilidad. Los miembros del equipo han trabajado con macOS y Ubuntu 22.04.
+El desarrollo de Song-Hub se ha efectuado con un stack homogéneo basado en Python 3.12 (CPython oficial) sobre Flask 3.1, SQLAlchemy 2.0 y Alembic 1.16 para la capa de datos, ejecutado indistintamente en macOS Sonoma (arm64) y Ubuntu 22.04 LTS. Visual Studio Code y PyCharm fueron los IDE predominantes, aunque algunos integrantes prefirieron JetBrains Fleet para pair-programming. Todo el backend se desarrolla en modo API modular (módulos `auth`, `dataset`, `featuremodel`, `webhook`), mientras que los estáticos se sirven ya compilados. Las pruebas funcionales utilizan Selenium 4.21 con ChromeDriver 131 y los tests de carga se realizan con Locust 2.32. La cohesión entre sistemas operativos se consiguió dockerizando el conjunto (Docker Engine 24.x + plugin `docker compose` v2.29) y fijando dependencias con `requirements.txt`. A nivel de instrumentación, `rosemary`, el CLI interno disponible en `pyproject.toml`, centraliza tareas rutinarias como limpieza de logs, seeders y ejecución de test suites para evitar disparidades manuales.
 
 ### Requisitos previos
-- Git (2.39+), Python 3.12.x (se recomienda `pyenv` o `asdf` para fijar versión), pip y virtualenv (o `venv`).
-- Docker Engine 24+ y plugin `docker compose`; en Desktop activar integración con WSL donde aplique.
-- Make (opcional pero cómodo en macOS/Linux) o, en su defecto, usar los comandos equivalentes indicados.
-- Navegador Chrome/Chromium y ChromeDriver compatible para pruebas Selenium locales; en CI se usan contenedores con drivers preinstalados.
-- Node no es requerido para la ejecución básica (los estáticos se sirven ya construidos), pero puede ser útil para tareas de linting front si se extiende la UI.
+- Git 2.39 o superior con credenciales configuradas para GitHub y GPG opcional para firmar commits.
+- Python 3.12.x gestionado con `pyenv`, `asdf` o el instalador oficial; para Windows se exige WSL2 + Ubuntu para igualar rutas POSIX.
+- `pip>=24` y `virtualenv`/`venv` para fases nativas; `pip-tools` es opcional para regenerar `requirements.txt`.
+- Docker Engine 24+, BuildKit activo y `docker compose` v2; en macOS se habilita Rosetta para imágenes amd64 heredadas.
+- MariaDB 10.6/10.11 si se ejecuta fuera de contenedor; `mysql-client` es útil para inspecciones rápidas.
+- Navegador Chrome o Chromium con su ChromeDriver correspondiente (Selenium) más Java 17 para ejecutar `selenium-server` standalone cuando se orquesta desde CI local.
+- Locust 2.32 y dependencias declaradas en `app/modules/dataset/tests/locustfile.py`; se instalan dentro del mismo `venv`.
+- Herramientas auxiliares: `make` para usar los atajos documentados, `openssl` para gestionar certificados (scripts `docker/letsencrypt`), y `direnv`/`dotenv` si se desea cargar variables automáticamente.
 
 ### Estructura de ramas y entornos
-Se trabaja con trunk-based (rama `trunk`) y rama `main` para releases. Los entornos desplegados en Render son: `dev` (features en validación inicial) y `staging` (preproducción, espejo de prod). En local se replica la configuración mediante `docker/docker-compose.dev.yml`, que levanta app, base de datos MariaDB y Nginx. En producción se usan los `docker-compose.prod*.yml` con SSL y configuración de webhook cuando aplica.
+Seguimos un flujo trunk-based denominado **EGC-flow**: desarrollo diario sobre `trunk` con CI obligatoria (tests unitarios + flake8 + black + isort + cobertura mínima). `main` actúa como rama protegida de releases y solo recibe merges etiquetados. Además, mantenemos ramas efímeras `feature/<issue>` que se destruyen tras el merge y ramas `hotfix/*` para incidencias de producción. Render aloja dos servicios permanentes: `song-hub-dev` (branch `trunk`) y `song-hub-staging` (branch `main`, pero con variables apuntando a recursos previos); cuando hay entrega final, se levanta un tercero `song-hub-prod` con dominio oficial y SSL gestionado con Let's Encrypt vía scripts `scripts/ssl_setup.sh`. La paridad entre entornos se garantiza con los ficheros `docker/docker-compose.*.yml`, que comparten la misma build de imagen `docker/images/backend/Dockerfile` y diferencian únicamente secretos y volúmenes.
 
 ### Configuración local paso a paso (entorno nativo)
-1) Clonado del repositorio:
-```
-git clone https://github.com/Song-hub-egc/song-hub.git
-cd song-hub
-```
-2) Creación de entorno virtual y dependencias Python:
-```
-python3.12 -m venv .venv
-source .venv/bin/activate  # En Windows: .venv\Scripts\activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-3) Variables de entorno: crear un fichero `.env` (o usar `instance/config.py` según la configuración) con al menos:
-```
-FLASK_ENV=development
-SECRET_KEY=changeme
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=songhub
-DB_PASSWORD=songhub
-DB_NAME=songhub
-MAIL_SERVER=smtp.example.com
-MAIL_PORT=587
-MAIL_USERNAME=user
-MAIL_PASSWORD=pass
-```
-4) Base de datos local: levantar MariaDB con Docker si no se tiene instalada:
-```
-docker run -d --name songhub-db -p 3306:3306 -e MARIADB_ROOT_PASSWORD=root -e MARIADB_DATABASE=songhub -e MARIADB_USER=songhub -e MARIADB_PASSWORD=songhub mariadb:10.6
-```
-5) Migraciones de esquema:
-```
-flask db upgrade   # si la app expone el CLI
-# o con alembic directamente
-alembic upgrade head
-```
-6) Datos de prueba (opcional): usar los seeders incluidos en `core/resources/seeders` o scripts de `scripts/` si se requiere poblar con datasets iniciales.
-7) Ejecutar la aplicación en local:
-```
-export FLASK_APP=wsgi.py
-flask run --reload
-# o bien
-python wsgi.py
-```
+1. **Clonado y actualización de submódulos** (no se usan submódulos, pero recomendamos sincronizar dependencias):  
+   ```bash
+   git clone https://github.com/Song-hub-egc/song-hub.git
+   cd song-hub
+   git lfs install  # por si se descargan datasets grandes
+   ```
+2. **Virtualenv y dependencias**:  
+   ```bash
+   python3.12 -m venv .venv
+   source .venv/bin/activate       # Windows/WSL: .venv/Scripts/activate
+   pip install --upgrade pip wheel setuptools
+   pip install -r requirements.txt
+   ```
+   El `pyproject.toml` define deps de desarrollo (`black`, `isort`, `flake8`, `autoflake`); se instalan con `pip install -e .[dev]` para acceder al CLI `rosemary`.
+3. **Variables de entorno**: crear `.env` (copiar de `docker/.env.example` si está disponible) o utilizar `instance/config.py`. Variables mínimas: `FLASK_ENV`, `DATABASE_URI`, `SECRET_KEY`, credenciales SMTP (`MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`), claves de integración (por ejemplo, tokens de Zenodo si se sincroniza con repos externos) y valores específicos de testing como `WORKING_DIR` (usado en `core/environment/host.py` para distinguir si se ejecuta en contenedor).
+4. **Base de datos**: puede instalarse MariaDB localmente o levantarse con Docker:  
+   ```bash
+   docker run --name songhub-db -p 3306:3306 \
+     -e MARIADB_ROOT_PASSWORD=root \
+     -e MARIADB_DATABASE=songhub \
+     -e MARIADB_USER=songhub \
+     -e MARIADB_PASSWORD=songhub \
+     -d mariadb:10.11
+   ```
+   Alternativamente, `scripts/init-testing-db.sh` crea la base de datos y aplica permisos.
+5. **Migraciones y datos**:  
+   ```bash
+   flask db upgrade          # CLI estándar
+   rosemary db_seed          # carga datasets y usuarios demo
+   ```
+   En caso de necesitar un reset completo, usar `rosemary db_reset` o `scripts/clean_docker.sh` si se trabaja en contenedores.
+6. **Arranque de la app**:  
+   ```bash
+   export FLASK_APP=wsgi.py
+   flask run --debug
+   # o
+   python wsgi.py
+   ```
+   El frontend queda disponible en `http://localhost:5000`, con assets servidos por Flask.
 
 ### Configuración local con Docker Compose (recomendada)
-Para minimizar diferencias entre máquinas se usa el stack dockerizado.
-```
+Para alinear el entorno con Render se usa el stack definido en `docker/docker-compose.dev.yml`, que incluye servicios `web`, `db`, `nginx` y workers auxiliares si se habilita el procesamiento asíncrono. La secuencia típica es:
+```bash
+cp docker/.env.dev.example .env
 docker compose -f docker/docker-compose.dev.yml up --build
 ```
-Este archivo levanta la API Flask, MariaDB y Nginx con el mapeo de puertos por defecto (app en 5000 o 8000 según config, DB en 3306). Las variables de entorno se leen de `.env` o de los ficheros de entorno definidos en `docker/`. Para parar y limpiar:
-```
-docker compose -f docker/docker-compose.dev.yml down -v
-```
+El `Dockerfile` instala Python 3.12 slim, Node 20 (para reconstruir estáticos si fuese necesario) y Chrome + ChromeDriver para Selenium dentro del contenedor cuando se exporta la variable `ENABLE_E2E=1`. Los volúmenes montan el código en `/app`, de modo que los cambios se reflejan sin rebuild. Para detener y limpiar volúmenes: `docker compose -f docker/docker-compose.dev.yml down -v`. Los archivos `docker-compose.prod.yml`, `.prod.ssl.yml` y `.prod.webhook.yml` añaden certificados (`docker/letsencrypt`), config de nginx (`docker/nginx/default.conf`) y contenedores auxiliares para procesar webhooks con Flamapy. La carpeta `docker/entrypoints/` contiene scripts que esperan a la base de datos (`wait-for-db.sh`) y ejecutan migraciones automáticamente antes de lanzar Gunicorn.
+
+### Automatización de pruebas y subsistemas relacionados
+El repositorio incluye múltiples suites. Los tests unitarios y de integración se ejecutan con `pytest` (ver `app/modules/pytest.ini`). Para dispararlos localmente basta con `rosemary test` o `pytest`. Los tests funcionales de Selenium viven en `app/modules/dataset/tests/test_selenium.py`; exigen tener la aplicación levantada y un ChromeDriver compatible. Se parametrizan mediante variables como `SELENIUM_HEADLESS`, `SELENIUM_DRIVER_PATH` y `WORKING_DIR`. Cuando se quiere reutilizar el driver del contenedor, basta con ejecutar `docker compose ... exec web rosemary selenium run`. Para las pruebas de carga, `locustfile.py` utiliza `core.environment.host.get_host_for_locust_testing`, por lo que únicamente se debe establecer `LOCUST_USERS`, `LOCUST_SPAWN_RATE` y `LOCUST_RUN_TIME`. El comando recomendado es `rosemary locust start` (aplica configuración por defecto y abre la UI en `http://localhost:8089`). Además, el CLI ofrece `rosemary linter run` para ejecutar `black`, `isort` y `flake8` con los parámetros fijados en `pyproject.toml`, asegurando que el estilo del código es uniforme antes de abrir un PR.
+
+### Gestión de secretos y servicios externos
+Para autenticar el envío de correos (2FA) se utiliza cualquier proveedor SMTP compatible con TLS (Gmail, Outlook, SendGrid). Los tokens se cargan como secretos en Render y en GitHub Actions (`Settings > Secrets and variables > Actions`). Las descargas masivas se firman mediante claves internas; si se activan integraciones con Zenodo u otros repositorios científicos, sus tokens se guardan en `ROSEMARY_ENV` (un fichero encriptado con `sops` en equipos que lo requieren). Los certificados TLS se automatizan con `scripts/ssl_setup.sh` y `scripts/ssl_renew.sh`, que se apoyan en `certbot` dentro del contenedor `docker/letsencrypt`. Para webhooks entrantes se expone un endpoint protegido por `WEBHOOK_SHARED_SECRET` que se define tanto en la app como en el sistema emisor.
 
 ### Diferencias entre miembros del equipo
-- macOS y Linux: se trabajó principalmente con Docker Compose y `venv`. Makefiles facilitaron atajos (por ejemplo, `make up`, `make down`).
-- Windows/WSL2: se recomendó clonar dentro de WSL para evitar problemas de rutas en los bind mounts de Docker y ejecutar los mismos comandos que en Linux.
-- Algunos miembros ejecutaron la base de datos nativamente (MariaDB 10.6/10.11) y la app en `venv`, manteniendo la paridad de variables de entorno. Otros usaron el stack completo en contenedores.
+Los seis integrantes trabajaron en entornos heterogéneos. Jesús y Rares utilizaron macOS Sonoma en equipos Apple Silicon; levantaron el stack completo con Docker y ejecutaron MariaDB contenedorizada para evitar instalar la base en el host. Pablo y Diego se encargaron de los despliegues y prefirieron Ubuntu 22.04 bare metal, ejecutando la app directamente desde `venv` y solo dockerizando Nginx + DB cuando necesitaban TLS local. Daniel utilizó Windows 11 con WSL2, montando el repositorio en `/home` para evitar problemas de permisos y aprovechando VS Code Remote. Miguel trabajó en Fedora 40, por lo que adaptó algunos scripts (`sed -i`) y proporcionó feedback para que fueran POSIX compliant. Esta diversidad obligó a documentar cada paso, reforzar el CLI `rosemary` y validar en GitHub Actions (Ubuntu + macOS runners) para asegurar que cualquier desarrollador nuevo puede replicar el entorno completo en pocas horas.
 
 ### Ejecución de pruebas locales
 - **Unitarias/integ:** `pytest` desde la raíz. Añadir `-q` o `-k` para filtrar.
