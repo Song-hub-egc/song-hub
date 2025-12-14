@@ -14,6 +14,7 @@ from app.modules.cart.models import Cart, CartItem
 from app.modules.cart.repositories import CartRepository
 from app.modules.dataset.models import DataSet, DSDownloadRecord
 from app.modules.featuremodel.models import FeatureModel
+from app.modules.imagedataset.models import Image
 
 
 class CartService:
@@ -73,6 +74,29 @@ class CartService:
 
         # Add to cart
         cart_item = self.repository.add_item(cart, audio_id=audio_id)
+
+        return {
+            "success": True,
+            "message": "Added to cart",
+            "cart_item_id": cart_item.id,
+            "cart_count": self.get_cart_count(),
+        }
+
+    def add_image_to_cart(self, image_id: int) -> dict:
+        """Add an image to the cart."""
+        cart = self.get_or_create_cart()
+
+        # Check if image exists
+        image = Image.query.get(image_id)
+        if not image:
+            return {"success": False, "message": "Image not found"}
+
+        # Check if already in cart
+        if self.repository.item_exists(cart, image_id=image_id):
+            return {"success": False, "message": "Item already in cart"}
+
+        # Add to cart
+        cart_item = self.repository.add_item(cart, image_id=image_id)
 
         return {
             "success": True,
@@ -169,6 +193,13 @@ class CartService:
                         dataset = audio.audio_dataset
                         if dataset:
                             files_to_add = audio.files
+
+                elif cart_item.image_id:
+                    image = cart_item.image
+                    if image:
+                        dataset = image.image_dataset
+                        if dataset:
+                            files_to_add = image.files
 
                 if not dataset or not files_to_add:
                     continue
@@ -271,6 +302,9 @@ class CartService:
                 # audio.audio_dataset is the object, we need ID.
                 # Audio model has data_set_id field.
                 dataset_id = cart_item.audio.data_set_id
+            elif cart_item.image_id and cart_item.image:
+                # Image model has data_set_id field.
+                dataset_id = cart_item.image.data_set_id
 
             if dataset_id:
                 # Create download record

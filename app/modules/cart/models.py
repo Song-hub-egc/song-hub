@@ -57,11 +57,14 @@ class CartItem(db.Model):
     cart_id = db.Column(db.Integer, db.ForeignKey("cart.id"), nullable=False)
     feature_model_id = db.Column(db.Integer, db.ForeignKey("feature_model.id"), nullable=True)
     audio_id = db.Column(db.Integer, db.ForeignKey("audio.id"), nullable=True)
+    image_id = db.Column(db.Integer, db.ForeignKey("image.id"), nullable=True)
     added_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     feature_model = db.relationship("FeatureModel", backref="cart_items", lazy=True)
     audio = db.relationship("Audio", backref="cart_items", lazy=True)
+    image = db.relationship("Image", backref="cart_items", lazy=True)
 
     def __repr__(self):
-        return f"<CartItem cart_id={self.cart_id} feature_model_id={self.feature_model_id} audio_id={self.audio_id}>"
+        return f"""<CartItem cart_id={self.cart_id} feature_model_id={self.feature_model_id}
+        audio_id={self.audio_id} image_id={self.image_id}>"""

@@ -44,6 +44,18 @@ def add_audio_to_cart(audio_id):
         return jsonify({"success": False, "message": "An error occurred"}), 500
 
 
+@cart_bp.route("/cart/add/image/<int:image_id>", methods=["POST"])
+def add_image_to_cart(image_id):
+    """Add an image to the cart (AJAX endpoint)."""
+    try:
+        result = cart_service.add_image_to_cart(image_id)
+        status_code = 200 if result["success"] else 400
+        return jsonify(result), status_code
+    except Exception as e:
+        logger.exception(f"Error adding image to cart: {e}")
+        return jsonify({"success": False, "message": "An error occurred"}), 500
+
+
 @cart_bp.route("/cart/remove/<int:cart_item_id>", methods=["DELETE", "POST"])
 def remove_from_cart(cart_item_id):
     """Remove an item from the cart (AJAX endpoint)."""

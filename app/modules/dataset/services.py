@@ -325,6 +325,7 @@ class AuthorService(BaseService):
 class DatasetCommentService(BaseService):
     def __init__(self):
         from app.modules.dataset.repositories import DatasetCommentRepository
+
         super().__init__(DatasetCommentRepository())
 
     def get_dataset_comments(self, dataset_id: int):
@@ -333,11 +334,7 @@ class DatasetCommentService(BaseService):
 
     def create_comment(self, dataset_id: int, user_id: int, content: str):
         """Create a new comment"""
-        return self.repository.create(
-            dataset_id=dataset_id,
-            user_id=user_id,
-            content=content
-        )
+        return self.repository.create(dataset_id=dataset_id, user_id=user_id, content=content)
 
     def update_comment(self, comment_id: int, content: str, user_id: int):
         """Update a comment (only by the author)"""
@@ -357,6 +354,7 @@ class DatasetCommentService(BaseService):
             return None
 
         return self.repository.soft_delete_comment(comment_id, current_user_id)
+
 
 class DSDownloadRecordService(BaseService):
     def __init__(self):

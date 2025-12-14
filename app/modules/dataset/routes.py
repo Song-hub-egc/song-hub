@@ -23,12 +23,12 @@ from app.modules.dataset import dataset_bp
 from app.modules.dataset.models import DSDownloadRecord
 from app.modules.dataset.services import (
     AuthorService,
+    DatasetCommentService,
     DataSetService,
     DOIMappingService,
     DSDownloadRecordService,
     DSMetaDataService,
     DSViewRecordService,
-    DatasetCommentService
 )
 from app.modules.zenodo.services import ZenodoService
 
@@ -330,39 +330,26 @@ def get_dataset_stats(dataset_id):
 # Comment endpoints
 comment_service = DatasetCommentService()
 
+
 @dataset_bp.route("/datasets/<int:dataset_id>/comments", methods=["GET"])
 def get_comments(dataset_id):
     """Get all comments for a dataset"""
-    dataset = dataset_service.get_or_404(dataset_id)
     comments = comment_service.get_dataset_comments(dataset_id)
-    return jsonify({
-        "success": True,
-        "comments": [comment.to_dict() for comment in comments]
-    })
+    return jsonify({"success": True, "comments": [comment.to_dict() for comment in comments]})
 
 
 @dataset_bp.route("/datasets/<int:dataset_id>/comments", methods=["POST"])
 @login_required
 def create_comment(dataset_id):
     """Create a new comment"""
-    dataset = dataset_service.get_or_404(dataset_id)
-
     data = request.get_json()
-    content = data.get('content', '').strip()
+    content = data.get("content", "").strip()
     if not content:
         return jsonify({"success": False, "message": "Comment content is required"}), 400
 
-    comment = comment_service.create_comment(
-        dataset_id=dataset_id,
-        user_id=current_user.id,
-        content=content
-    )
+    comment = comment_service.create_comment(dataset_id=dataset_id, user_id=current_user.id, content=content)
 
-    return jsonify({
-        "success": True,
-        "message": "Comment posted successfully",
-        "comment": comment.to_dict()
-    }), 201
+    return jsonify({"success": True, "message": "Comment posted successfully", "comment": comment.to_dict()}), 201
 
 
 @dataset_bp.route("/comments/<int:comment_id>", methods=["PUT"])
@@ -370,7 +357,7 @@ def create_comment(dataset_id):
 def update_comment(comment_id):
     """Update a comment"""
     data = request.get_json()
-    content = data.get('content', '').strip()
+    content = data.get("content", "").strip()
 
     if not content:
         return jsonify({"success": False, "message": "Comment content is required"}), 400
@@ -380,11 +367,7 @@ def update_comment(comment_id):
     if not comment:
         return jsonify({"success": False, "message": "Comment not found or unauthorized"}), 404
 
-    return jsonify({
-        "success": True,
-        "message": "Comment updated successfully",
-        "comment": comment.to_dict()
-    })
+    return jsonify({"success": True, "message": "Comment updated successfully", "comment": comment.to_dict()})
 
 
 @dataset_bp.route("/comments/<int:comment_id>", methods=["DELETE"])
@@ -396,7 +379,4 @@ def delete_comment(comment_id):
     if not comment:
         return jsonify({"success": False, "message": "Comment not found or unauthorized"}), 404
 
-    return jsonify({
-        "success": True,
-        "message": "Comment deleted successfully"
-    })
+    return jsonify({"success": True, "message": "Comment deleted successfully"})

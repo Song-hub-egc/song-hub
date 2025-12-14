@@ -12,6 +12,7 @@ Run from project root:
 """
 
 from datetime import datetime
+
 from locust import HttpUser, TaskSet, between, task
 
 from core.environment.host import get_host_for_locust_testing
@@ -141,7 +142,6 @@ class DatasetUser(HttpUser):
     tasks = [DatasetBehavior]
 
 
-
 class DatasetCommentBehavior(TaskSet):
     def on_start(self):
         """Called when a simulated user starts. Login the user and create a comment for editing."""
@@ -167,9 +167,7 @@ class DatasetCommentBehavior(TaskSet):
         """Create a comment to be used by the edit task."""
         # Create a comment on dataset 1
         response = self.client.post(
-            "/datasets/1/comments",
-            json={"content": "Initial comment for editing"},
-            name="Create Initial Comment"
+            "/datasets/1/comments", json={"content": "Initial comment for editing"}, name="Create Initial Comment"
         )
         if response.status_code == 201:
             self.comment_id = response.json()["comment"]["id"]
@@ -180,41 +178,28 @@ class DatasetCommentBehavior(TaskSet):
     @task(2)
     def post_comment(self):
         """Task to publish a new comment."""
-        self.client.post(
-            "/datasets/1/comments",
-            json={"content": f"Comment at {datetime.now()}"},
-            name="Post Comment"
-        )
+        self.client.post("/datasets/1/comments", json={"content": f"Comment at {datetime.now()}"}, name="Post Comment")
 
     @task(1)
     def edit_comment(self):
         """Task to edit an existing comment with the current time."""
         if self.comment_id:
             new_content = f"Edited at {datetime.now()}"
-            self.client.put(
-                f"/comments/{self.comment_id}",
-                json={"content": new_content},
-                name="Edit Comment"
-            )
+            self.client.put(f"/comments/{self.comment_id}", json={"content": new_content}, name="Edit Comment")
 
     @task(1)
     def delete_comment(self):
         """Task to create and then delete a comment."""
         # First create a comment to delete
         response = self.client.post(
-            "/datasets/1/comments",
-            json={"content": "Comment to be deleted"},
-            name="Create Comment (for delete)"
+            "/datasets/1/comments", json={"content": "Comment to be deleted"}, name="Create Comment (for delete)"
         )
-        
+
         if response.status_code == 201:
             comment_to_delete_id = response.json()["comment"]["id"]
-            
+
             # Now delete it
-            self.client.delete(
-                f"/comments/{comment_to_delete_id}",
-                name="Delete Comment"
-            )
+            self.client.delete(f"/comments/{comment_to_delete_id}", name="Delete Comment")
 
 
 class DatasetCommentUser(HttpUser):

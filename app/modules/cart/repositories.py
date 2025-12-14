@@ -34,21 +34,29 @@ class CartRepository:
             db.session.commit()
         return cart
 
-    def add_item(self, cart: Cart, feature_model_id: Optional[int] = None, audio_id: Optional[int] = None) -> CartItem:
-        """Add a feature model or audio to the cart."""
+    def add_item(
+        self,
+        cart: Cart,
+        feature_model_id: Optional[int] = None,
+        audio_id: Optional[int] = None,
+        image_id: Optional[int] = None,
+    ) -> CartItem:
+        """Add a feature model, audio, or image to the cart."""
         if feature_model_id:
             # Check if item already exists
             existing_item = CartItem.query.filter_by(cart_id=cart.id, feature_model_id=feature_model_id).first()
         elif audio_id:
             existing_item = CartItem.query.filter_by(cart_id=cart.id, audio_id=audio_id).first()
+        elif image_id:
+            existing_item = CartItem.query.filter_by(cart_id=cart.id, image_id=image_id).first()
         else:
-            raise ValueError("Either feature_model_id or audio_id must be provided")
+            raise ValueError("Either feature_model_id, audio_id, or image_id must be provided")
 
         if existing_item:
             return existing_item
 
         # Create new cart item
-        cart_item = CartItem(cart_id=cart.id, feature_model_id=feature_model_id, audio_id=audio_id)
+        cart_item = CartItem(cart_id=cart.id, feature_model_id=feature_model_id, audio_id=audio_id, image_id=image_id)
         db.session.add(cart_item)
 
         # Update cart timestamp
@@ -104,12 +112,20 @@ class CartRepository:
         """Get the number of items in a cart."""
         return CartItem.query.filter_by(cart_id=cart.id).count()
 
-    def item_exists(self, cart: Cart, feature_model_id: Optional[int] = None, audio_id: Optional[int] = None) -> bool:
-        """Check if a feature model or audio is already in the cart."""
+    def item_exists(
+        self,
+        cart: Cart,
+        feature_model_id: Optional[int] = None,
+        audio_id: Optional[int] = None,
+        image_id: Optional[int] = None,
+    ) -> bool:
+        """Check if a feature model, audio, or image is already in the cart."""
         if feature_model_id:
             return CartItem.query.filter_by(cart_id=cart.id, feature_model_id=feature_model_id).first() is not None
         elif audio_id:
             return CartItem.query.filter_by(cart_id=cart.id, audio_id=audio_id).first() is not None
+        elif image_id:
+            return CartItem.query.filter_by(cart_id=cart.id, image_id=image_id).first() is not None
         return False
 
     def merge_carts(self, session_cart: Cart, user_cart: Cart) -> None:
@@ -125,6 +141,9 @@ class CartRepository:
             elif session_item.audio_id:
                 if not self.item_exists(user_cart, audio_id=session_item.audio_id):
                     self.add_item(user_cart, audio_id=session_item.audio_id)
+            elif session_item.image_id:
+                if not self.item_exists(user_cart, image_id=session_item.image_id):
+                    self.add_item(user_cart, image_id=session_item.image_id)
 
         # Delete session cart
         db.session.delete(session_cart)
@@ -165,6 +184,23 @@ class CartRepository:
                             "dataset": audio.audio_dataset,
                             "added_at": cart_item.added_at,
                             "audio": audio,
+                        }
+                    )
+            elif cart_item.image_id:
+                image = cart_item.image
+                if image and image.image_meta_data:
+                    dataset = image.data_set if hasattr(image, "data_set") else None
+
+                    items.append(
+                        {
+                            "cart_item_id": cart_item.id,
+                            "id": image.id,
+                            "type": "image",
+                            "title": image.image_meta_data.title,
+                            "description": image.image_meta_data.description,
+                            "dataset": image.image_dataset,
+                            "added_at": cart_item.added_at,
+                            "image": image,
                         }
                     )
         return items

@@ -483,6 +483,10 @@
                                     class="btn btn-outline-primary btn-sm" style="border-radius: 5px;">
                                     <i data-feather="download"></i> Download
                                 </a>
+                                <button onclick="addImageToCart({{ image.id }})" class="btn btn-outline-success btn-sm"
+                                    style="border-radius: 5px;">
+                                    <i data-feather="shopping-cart"></i> Add to cart
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -560,6 +564,15 @@
             class="btn btn-outline-success mt-2" style="border-radius: 5px; width: 100%;">
             <i data-feather="shopping-cart" class="center-button-icon"></i>
             Add all audios to cart ({{ dataset.audios|length }})
+        </button>
+        {% endif %}
+
+        {% if dataset.images %}
+        <button
+            onclick="addAllImagesToCart({{ dataset.id }}, [{% for image in dataset.images %}{{ image.id }}{% if not loop.last %}, {% endif %}{% endfor %}])"
+            class="btn btn-outline-success mt-2" style="border-radius: 5px; width: 100%;">
+            <i data-feather="shopping-cart" class="center-button-icon"></i>
+            Add all images to cart ({{ dataset.images|length }})
         </button>
         {% endif %}
     </div>
@@ -1122,6 +1135,84 @@
 
         if (typeof showToast === 'function') {
             showToast(message || 'No audio files were added', addedCount > 0 ? 'success' : 'warning');
+        } else {
+            alert(message);
+        }
+
+        // Re-render feather icons for any newly added elements
+        feather.replace();
+    }
+
+    async function addImageToCart(imageId) {
+        try {
+            const response = await fetch(`/cart/add/image/${imageId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                // Update cart count if exists
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
+                }
+                // Show success feedback
+                if (typeof showToast === 'function') {
+                    showToast('Added to cart!', 'success');
+                } else {
+                    alert('Added to cart!');
+                }
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'warning');
+                } else {
+                    alert(data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+        }
+    }
+
+    async function addAllImagesToCart(datasetId, imageIds) {
+        let addedCount = 0;
+        let alreadyInCart = 0;
+
+        // Add images sequentially to avoid session conflicts
+        for (const imageId of imageIds) {
+            try {
+                const response = await fetch(`/cart/add/image/${imageId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    addedCount++;
+                } else if (data.message && data.message.includes('already')) {
+                    alreadyInCart++;
+                }
+            } catch (error) {
+                console.error(`Error adding image ${imageId} to cart:`, error);
+            }
+        }
+
+        // Update cart count after all images are processed
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+        }
+
+        // Show summary message
+        let message = '';
+        if (addedCount > 0) {
+            message += `✓ Added ${addedCount} image${addedCount > 1 ? 's' : ''} to cart! `;
+        }
+        if (alreadyInCart > 0) {
+            message += `${alreadyInCart} already in cart.`;
+        }
+
+        if (typeof showToast === 'function') {
+            showToast(message || 'No images were added', addedCount > 0 ? 'success' : 'warning');
         } else {
             alert(message);
         }
