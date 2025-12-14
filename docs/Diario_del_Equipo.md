@@ -1,8 +1,11 @@
 # Song-hub
 
-**Grupo:** 1
-**Curso escolar:** 2024/2025  
+**Grupo:** 1 
+
+**Curso escolar:** 2025/2026 
+
 **Asignatura:** Evolución y Gestión de la Configuración
+
 **Profesor:** David Romero Organvídez
 
 **Repositorio:** https://github.com/Song-hub-egc/song-hub.git 
@@ -38,6 +41,7 @@
 
 #### Acuerdos tomados
 **Acuerdo 2025-01-01:** Redacción del Acta Fundacional y normas básicas de trabajo, canales de comunicación (Whatsapp y Discord) y toma de decisiones.
+
 **Acuerdo 2025-01-02:** Compromiso del equipo de mantener un seguimiento del progreso y resolución de incidencias.
 
 ---
