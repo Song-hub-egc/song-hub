@@ -322,6 +322,40 @@ class AuthorService(BaseService):
         super().__init__(AuthorRepository())
 
 
+class DatasetCommentService(BaseService):
+    def __init__(self):
+        from app.modules.dataset.repositories import DatasetCommentRepository
+
+        super().__init__(DatasetCommentRepository())
+
+    def get_dataset_comments(self, dataset_id: int):
+        """Get all comments for a dataset"""
+        return self.repository.get_dataset_comments(dataset_id)
+
+    def create_comment(self, dataset_id: int, user_id: int, content: str):
+        """Create a new comment"""
+        return self.repository.create(dataset_id=dataset_id, user_id=user_id, content=content)
+
+    def update_comment(self, comment_id: int, content: str, user_id: int):
+        """Update a comment (only by the author)"""
+        comment = self.repository.get_by_id(comment_id)
+        if comment and comment.user_id == user_id and not comment.is_deleted:
+            return self.repository.update_comment(comment_id, content)
+        return None
+
+    def delete_comment(self, comment_id: int, current_user_id: int):
+        """Delete a comment (only by the dataset owner)"""
+        comment = self.repository.get_by_id(comment_id)
+        if not comment or comment.is_deleted:
+            return None
+
+        # Check if current user is the owner of the dataset
+        if comment.dataset.user_id != current_user_id:
+            return None
+
+        return self.repository.soft_delete_comment(comment_id, current_user_id)
+
+
 class DSDownloadRecordService(BaseService):
     def __init__(self):
         super().__init__(DSDownloadRecordRepository())

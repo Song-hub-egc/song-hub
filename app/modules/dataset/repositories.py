@@ -156,3 +156,47 @@ class DOIMappingRepository(BaseRepository):
 
     def get_new_doi(self, old_doi: str) -> str:
         return self.model.query.filter_by(dataset_doi_old=old_doi).first()
+
+
+class DatasetCommentRepository(BaseRepository):
+    def __init__(self):
+        from app.modules.dataset.models import DatasetComment
+
+        super().__init__(DatasetComment)
+
+    def get_dataset_comments(self, dataset_id: int, include_deleted: bool = False):
+        """Get comments for a dataset"""
+        query = self.model.query.filter_by(dataset_id=dataset_id)
+        if not include_deleted:
+            query = query.filter_by(is_deleted=False)
+        return query.order_by(self.model.created_at.desc()).all()
+
+    def get_user_comments(self, user_id: int):
+        """Get all comments by a user"""
+        return (
+            self.model.query.filter_by(user_id=user_id, is_deleted=False).order_by(self.model.created_at.desc()).all()
+        )
+
+    def soft_delete_comment(self, comment_id: int, deleted_by: int):
+        """Soft delete a comment"""
+        from datetime import datetime
+
+        comment = self.get_by_id(comment_id)
+        if comment:
+            comment.is_deleted = True
+            comment.deleted_at = datetime.utcnow()
+            comment.deleted_by = deleted_by
+            self.session.commit()
+        return comment
+
+    def update_comment(self, comment_id: int, content: str):
+        """Update comment content"""
+        from datetime import datetime
+
+        comment = self.get_by_id(comment_id)
+        if comment and not comment.is_deleted:
+            if comment.content != content:
+                comment.content = content
+                comment.updated_at = datetime.utcnow()
+                self.session.commit()
+        return comment

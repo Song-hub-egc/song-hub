@@ -64,12 +64,12 @@
     color: inherit !important;
 }
 
-.card-welcome{
+.card-welcome {
     background: #F68017 radial-gradient(circle at center left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
     color: #ffffff;
 }
 
-.card-note{
+.card-note {
     background: #1ab7ea radial-gradient(circle at center right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
     color: #ffffff;
 }
@@ -104,7 +104,7 @@
 }
 
 .stats-color {
-    color: #009688; 
+    color: #009688;
 }
 
 .doi_button {
@@ -227,7 +227,8 @@
     box-shadow: 0 4px 10px rgba(205, 127, 50, 0.3);
 }
 
-.trending-badge-4, .trending-badge-5 {
+.trending-badge-4,
+.trending-badge-5 {
     background-color: #e9ecef;
     color: #6c757d;
 }
@@ -278,4 +279,250 @@
     font-size: 13px;
     padding: 6px 16px;
     border-radius: 16px;
+}
+
+/* Comments Section Styles */
+.comments-section {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.comments-section .card-header {
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.comment-avatar {
+    flex-shrink: 0;
+}
+
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.comment-form-container {
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.comment-form-container textarea {
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.comment-form-container textarea:focus {
+    border-color: #0079d3;
+    outline: none;
+}
+
+.comments-list {
+    margin-top: 1rem;
+}
+
+.comment-item {
+    position: relative;
+    padding-left: 0;
+}
+
+.comment-thread {
+    display: flex;
+    gap: 0;
+}
+
+.comment-content-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.comment-card {
+    background-color: transparent;
+    padding: 0.5rem 0;
+    border: none;
+    transition: none;
+}
+
+.comment-card:hover {
+    box-shadow: none;
+    border: none;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.comment-author {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1c1c1c;
+}
+
+.comment-meta {
+    font-size: 0.75rem;
+    color: #7c7c7c;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.comment-meta .separator {
+    margin: 0 0.25rem;
+}
+
+.comment-body {
+    margin-bottom: 0.5rem;
+}
+
+.comment-text {
+    color: #1c1c1c;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 0.875rem;
+}
+
+/* Badge styles */
+.comment-badge {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 2px;
+    font-weight: 600;
+}
+
+.badge-you {
+    background-color: #0079d3;
+    color: white;
+}
+
+.badge-author {
+    background-color: #ff4500;
+    color: white;
+}
+
+.badge-edited {
+    background-color: #878a8c;
+    color: white;
+}
+
+/* Animation for new comments */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.comment-item {
+    animation: slideIn 0.2s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .avatar-circle {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+
+    .comment-text {
+        font-size: 0.8125rem;
+    }
+
+    .comment-author,
+    .comment-meta {
+        font-size: 0.6875rem;
+    }
+}
+
+/* Helper classes to replace inline styles */
+.feather-lg {
+    width: 24px;
+    height: 24px;
+}
+
+.feather-md {
+    width: 16px;
+    height: 16px;
+}
+
+.feather-sm {
+    width: 14px;
+    height: 14px;
+}
+
+.text-sm-09 {
+    font-size: 0.9rem;
+}
+
+.textarea-comment {
+    height: 100px;
+    resize: vertical;
+}
+
+.btn-rounded {
+    border-radius: 8px;
+}
+
+.alert-rounded {
+    border-radius: 12px;
+}
+
+/* Comment Editing State */
+.comment-edit-form {
+    display: none;
+}
+
+.comment-item.editing .comment-body {
+    display: none;
+}
+
+.comment-item.editing .comment-edit-form {
+    display: block;
+}
+
+/* Comment Delete State */
+.btn-edit-comment {
+    color: #6c757d;
+    /* text-muted */
+}
+
+.btn-edit-comment:hover {
+    color: #495057;
+}
+
+.btn-delete-comment {
+    color: #dc3545;
+    /* text-danger */
+}
+
+.btn-delete-comment:hover {
+    color: #bb2d3b;
+}
+/* Cart Styles */
+.cart-item {
+    transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.cart-summary {
+    background-color: #f8f9fa;
+    border: 1px solid rgba(0,0,0,.125);
 }

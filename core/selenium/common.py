@@ -76,6 +76,11 @@ def initialize_driver():
 
     elif driver_name == "firefox":
         options = webdriver.FirefoxOptions()
+
+        # Fix for Firefox installed via Snap on Linux
+        snap_binary = "/snap/firefox/current/usr/lib/firefox/firefox"
+        if os.path.exists(snap_binary):
+            options.binary_location = snap_binary
         # options.add_argument("--headless")  # Commented to show browser
         # Allow using a preinstalled geckodriver via env var to avoid online download
         geckodriver_path = os.environ.get("GECKODRIVER_PATH")

@@ -169,3 +169,54 @@ class DOIMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_doi_old = db.Column(db.String(120))
     dataset_doi_new = db.Column(db.String(120))
+
+
+class DatasetComment(db.Model):
+
+    # Basic fields
+    id = db.Column(db.Integer, primary_key=True)
+    dataset_id = db.Column(db.Integer, db.ForeignKey("data_set.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=True, onupdate=datetime.utcnow)
+
+    # Moderation fields
+    is_deleted = db.Column(db.Boolean, nullable=False, default=False)
+    deleted_at = db.Column(db.DateTime, nullable=True)
+    deleted_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+
+    # Relationships
+    dataset = db.relationship("DataSet", backref=db.backref("comments", lazy=True, cascade="all, delete-orphan"))
+    author = db.relationship("User", foreign_keys=[user_id], backref="comments")
+    deleter = db.relationship("User", foreign_keys=[deleted_by])
+
+    # Methods
+    def to_dict(self, include_replies=True):
+        result = {
+            "id": self.id,
+            "dataset_id": self.dataset_id,
+            "user_id": self.user_id,
+            "content": self.content if not self.is_deleted else "[Comment deleted]",
+            "created_at": self.created_at.isoformat() + "Z",
+            "updated_at": (self.updated_at.isoformat() + "Z") if self.updated_at else None,
+            "is_deleted": self.is_deleted,
+            "author": (
+                {
+                    "id": self.author.id,
+                    "name": (
+                        f"{self.author.profile.name} {self.author.profile.surname}"
+                        if hasattr(self.author, "profile")
+                        else "Unknown"
+                    ),
+                    "email": self.author.email,
+                }
+                if self.author and not self.is_deleted
+                else None
+            ),
+        }
+
+        return result
+
+    def __repr__(self):
+        return f"<DatasetComment id={self.id} dataset_id={self.dataset_id} user_id={self.user_id}>"

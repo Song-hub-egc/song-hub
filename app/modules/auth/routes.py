@@ -5,11 +5,13 @@ from app.modules.auth import auth_bp
 from app.modules.auth.forms import LoginForm, SignupForm, TwoFactorVerifyForm
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.services import AuthenticationService, SessionService
+from app.modules.cart.services import CartService
 from app.modules.profile.services import UserProfileService
 
 authentication_service = AuthenticationService()
 user_profile_service = UserProfileService()
 session_service = SessionService()
+cart_service = CartService()
 
 
 @auth_bp.route("/signup/", methods=["GET", "POST"])
@@ -30,6 +32,8 @@ def show_signup_form():
 
         # Log user
         login_user(user, remember=True)
+        # Merge session cart into user cart
+        cart_service.merge_session_cart_on_login(user.id)
         if not current_app.config.get("TESTING"):
             session_service.register_current_session(user)
         return redirect(url_for("public.index"))
@@ -54,6 +58,8 @@ def login():
                 return redirect(url_for("auth.verify_two_factor"))
             else:
                 login_user(user, remember=form.remember_me.data)
+                # Merge session cart into user cart
+                cart_service.merge_session_cart_on_login(user.id)
                 if not current_app.config.get("TESTING"):
                     session_service.register_current_session(user)
                 return redirect(url_for("public.index"))
@@ -102,6 +108,8 @@ def verify_two_factor():
             session.pop("pending_2fa_user_id", None)
             session.pop("remember_me", None)
             login_user(user, remember=remember)
+            # Merge session cart into user cart
+            cart_service.merge_session_cart_on_login(user.id)
             if not current_app.config.get("TESTING"):
                 session_service.register_current_session(user)
             return redirect(url_for("public.index"))
