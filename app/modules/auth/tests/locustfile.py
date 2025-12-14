@@ -78,7 +78,7 @@ class TwoFactorBehavior(TaskSet):
                 "/profile/two-factor/verify",
                 json={"token": "000000"},  # Invalid token, but stresses the server
                 headers={"X-CSRFToken": csrf_token},
-                name="2FA Verify (Simulated)"
+                name="2FA Verify (Simulated)",
             )
 
 
