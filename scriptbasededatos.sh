@@ -13,7 +13,6 @@ GRANT ALL PRIVILEGES ON uvlhubdb.* TO 'uvlhubdb_user'@'localhost';
 GRANT ALL PRIVILEGES ON uvlhubdb_test.* TO 'uvlhubdb_user'@'localhost';
 
 FLUSH PRIVILEGES;
-EXIT;
 EOF
 
 echo "Bases de datos recreadas correctamente."
