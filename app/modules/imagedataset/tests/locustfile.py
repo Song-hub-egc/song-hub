@@ -33,9 +33,7 @@ class ImageDatasetBehavior(TaskSet):
         # 1. Upload File
         # We need a file to upload. We can use a small dummy file or read checking if it exists
         # For performance testing, we can generate a small in-memory file.
-        files = {
-            "file": ("test_image.png", b"fake_image_content", "image/png")
-        }
+        files = {"file": ("test_image.png", b"fake_image_content", "image/png")}
 
         # Get CSRF token first (normally from a GET request, usually handled in login or previous requests)
         # But we need it for the headers.
@@ -43,10 +41,7 @@ class ImageDatasetBehavior(TaskSet):
         csrf_token = get_csrf_token(response)
 
         upload_response = self.client.post(
-            "/dataset/file/upload",
-            files=files,
-            headers={"X-CSRFToken": csrf_token},
-            name="Upload File (Dropzone)"
+            "/dataset/file/upload", files=files, headers={"X-CSRFToken": csrf_token}, name="Upload File (Dropzone)"
         )
 
         if upload_response.status_code == 200:
@@ -60,9 +55,9 @@ class ImageDatasetBehavior(TaskSet):
                     "desc": "Load testing description",
                     "tags": "locust,test",
                     "agreeCheckbox": "y",
-                    "csrf_token": csrf_token
+                    "csrf_token": csrf_token,
                 },
-                name="Submit Dataset Form"
+                name="Submit Dataset Form",
             )
         else:
             print(f"File upload failed: {upload_response.text}")
