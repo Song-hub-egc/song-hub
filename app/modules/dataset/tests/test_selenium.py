@@ -34,7 +34,6 @@ def test_upload_dataset():
     try:
         host = get_host_for_selenium_testing()
 
-
         driver.get(f"{host}/login")
         wait_for_page_to_load(driver)
 
@@ -43,7 +42,6 @@ def test_upload_dataset():
 
         email_field.send_keys("user1@example.com")
         password_field.send_keys("1234")
-
 
         password_field.send_keys(Keys.RETURN)
         time.sleep(4)
@@ -60,7 +58,6 @@ def test_upload_dataset():
         desc_field.send_keys("Description")
         tags_field = driver.find_element(By.NAME, "tags")
         tags_field.send_keys("tag1,tag2")
-
 
         add_author_button = driver.find_element(By.ID, "add_author")
         driver.execute_script("arguments[0].click();", add_author_button)
@@ -80,15 +77,12 @@ def test_upload_dataset():
         affiliation_field1 = driver.find_element(By.NAME, "authors-1-affiliation")
         affiliation_field1.send_keys("Club1")
 
-
         file1_path = os.path.abspath("app/modules/dataset/uvl_examples/file1.uvl")
         file2_path = os.path.abspath("app/modules/dataset/uvl_examples/file2.uvl")
-
 
         dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
         dropzone.send_keys(file1_path)
         wait_for_page_to_load(driver)
-
 
         dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
         dropzone.send_keys(file2_path)
@@ -111,7 +105,6 @@ def test_upload_dataset():
         name_field.send_keys("Author3")
         affiliation_field = driver.find_element(By.NAME, "feature_models-0-authors-2-affiliation")
         affiliation_field.send_keys("Club3")
-
 
         check = driver.find_element(By.ID, "agreeCheckbox")
         driver.execute_script("arguments[0].click();", check)
@@ -174,7 +167,7 @@ def test_trending_datasets():
         except NoSuchElementException:
             raise AssertionError("No download link found on the trending datasets page")
 
-        time.sleep(2)  
+        time.sleep(2)
         driver.get(host)
         wait_for_page_to_load(driver)
 
@@ -192,5 +185,3 @@ def test_trending_datasets():
 
     finally:
         close_driver(driver)
-
-

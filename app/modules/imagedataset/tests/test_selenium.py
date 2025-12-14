@@ -22,7 +22,6 @@ def test_image_dataset_upload_flow(test_database_poblated):
     try:
         host = get_host_for_selenium_testing()
 
-
         driver.get(f"{host}/login")
         try:
             wait_for_page_to_load(driver)
@@ -38,11 +37,9 @@ def test_image_dataset_upload_flow(test_database_poblated):
         driver.find_element(By.NAME, "password").send_keys(Keys.RETURN)
         wait_for_page_to_load(driver)
 
-
         driver.get(f"{host}/dataset/upload/image_dataset")
         wait_for_page_to_load(driver)
         time.sleep(2)
-
 
         try:
             title_field = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "title")))
@@ -55,15 +52,14 @@ def test_image_dataset_upload_flow(test_database_poblated):
         driver.find_element(By.NAME, "tags").send_keys("selenium,image,test")
 
         image_path = os.path.abspath("app/static/img/icons/icon-250x250.png")
-        
+
         if not os.path.exists(image_path):
-             raise FileNotFoundError(f"Test image not found at {image_path}")
+            raise FileNotFoundError(f"Test image not found at {image_path}")
 
         dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
         dropzone.send_keys(image_path)
         wait_for_page_to_load(driver)
         time.sleep(3)  # Additional wait for Dropzone to process the file
-
 
         try:
             WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "0_button")))
@@ -75,7 +71,7 @@ def test_image_dataset_upload_flow(test_database_poblated):
                     print(f"Alerts found: {alerts.text}")
             except NoSuchElementException:
                 print("No #alerts element found")
-            
+
             try:
                 logs = driver.get_log("browser")
                 print("Browser logs:")
@@ -86,7 +82,6 @@ def test_image_dataset_upload_flow(test_database_poblated):
 
             raise AssertionError("Image file upload failed or Dynamic form not rendered.")
 
-
         agree_checkbox = driver.find_element(By.ID, "agreeCheckbox")
         driver.execute_script("arguments[0].click();", agree_checkbox)
         time.sleep(1)  # Let UI update state
@@ -95,22 +90,17 @@ def test_image_dataset_upload_flow(test_database_poblated):
         if not upload_btn.is_enabled():
             driver.execute_script("document.getElementById('agreeCheckbox').click();")
 
-
         driver.execute_script("arguments[0].scrollIntoView();", upload_btn)
         driver.execute_script("arguments[0].click();", upload_btn)
-
 
         time.sleep(5)
         wait_for_page_to_load(driver)
 
-
         assert "Selenium Image Dataset" in driver.page_source
-
 
         link = driver.find_element(By.PARTIAL_LINK_TEXT, "Selenium Image Dataset")
         driver.execute_script("arguments[0].click();", link)
         wait_for_page_to_load(driver)
-
 
         assert "Images" in driver.page_source
         assert "icon-250x250.png" in driver.page_source

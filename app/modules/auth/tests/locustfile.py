@@ -76,7 +76,7 @@ class TwoFactorBehavior(TaskSet):
             # We can try to hit the verify endpoint with an invalid token to check load on verification logic.
             self.client.post(
                 "/profile/two-factor/verify",
-                json={"token": "000000"}, # Invalid token, but stresses the server
+                json={"token": "000000"},  # Invalid token, but stresses the server
                 headers={"X-CSRFToken": csrf_token},
                 name="2FA Verify (Simulated)"
             )
@@ -87,4 +87,3 @@ class AuthUser(HttpUser):
     min_wait = 5000
     max_wait = 9000
     host = get_host_for_locust_testing()
-
