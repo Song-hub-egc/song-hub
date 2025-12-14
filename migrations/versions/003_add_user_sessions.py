@@ -52,6 +52,6 @@ def upgrade():
 
 
 def downgrade():
-    # op.drop_index('idx_user_sessions', table_name='user_session')
+    op.drop_index('idx_user_sessions', table_name='user_session')
     op.drop_table('user_session')
     op.drop_table('flask_sessions')
