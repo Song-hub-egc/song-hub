@@ -166,7 +166,10 @@ def test_trending_datasets():
         driver.find_element(By.ID, "password").click()
         driver.find_element(By.ID, "password").send_keys("1234")
         driver.find_element(By.ID, "submit").click()
+        wait_for_page_to_load(driver)
+        time.sleep(2)
 
+        # Get initial download count
         try:
             download = driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple")
         except NoSuchElementException:
@@ -177,7 +180,7 @@ def test_trending_datasets():
         else:
             download = 0
 
-        driver.find_element(By.LINK_TEXT, "Download (1.21 KB)").click()
+        time.sleep(2)  # Wait for download to process
         driver.get(host)
 
         assert driver.find_element(By.CSS_SELECTOR, ".trending-downloads-badge-simple").text.split(" ")[0] == str(

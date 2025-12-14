@@ -170,21 +170,6 @@
 
                 </div>
 
-                <div class="row mb-2">
-
-                    <div class="col-md-4 col-12">
-                        <span class=" text-secondary">
-                            Downloads
-                        </span>
-                    </div>
-                    <div class="col-md-8 col-12">
-                        <span class="badge bg-primary">
-                            <i data-feather="download"></i> {{ dataset.download_count }}
-                        </span>
-                    </div>
-
-                </div>
-
 
 
             </div>
@@ -338,6 +323,7 @@
 
         <div class="list-group">
 
+            {% if dataset.dataset_type == 'uvl_dataset' %}
             <div class="list-group-item">
 
                 <div class="row">
@@ -429,21 +415,153 @@
                             </ul>
                         </div>
 
+                        <div class="btn-group" role="group">
+                            <button id="btnGroupDropExport{{ file.id }}" type="button"
+                                class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false" style=" border-radius: 5px;">
+                                <i data-feather="download"></i> Export
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="btnGroupDropExport{{ file.id }}">
+                                <li>
+                                    <a class="dropdown-item"
+                                        href="{{ url_for('hubfile.download_file', file_id=file.id) }}">
+                                        UVL
+                                    </a>
+                                    <a class="dropdown-item"
+                                        href="{{ url_for('flamapy.to_glencoe', file_id=file.id) }}">
+                                        Glencoe
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('flamapy.to_cnf', file_id=file.id) }}">
+                                        DIMACS
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('flamapy.to_splot', file_id=file.id) }}">
+                                        SPLOT
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
+                        <button onclick="addToCart({{ feature_model.id }})" class="btn btn-outline-success btn-sm"
+                            style="border-radius: 5px;">
+                            <i data-feather="shopping-cart"></i> Add to cart
+                        </button>
 
                     </div>
                 </div>
             </div>
             {% endfor %}
             {% endfor %}
+
+            {% elif dataset.dataset_type == 'image_dataset' %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <h4 style="margin-bottom: 0px">Images</h4>
+                        <h4 style="margin-bottom: 0px;"><span class="badge bg-dark">{{ dataset.get_files_count()
+                                }}</span></h4>
+                    </div>
+                </div>
+            </div>
+
+            {% for image in dataset.images %}
+            {% for file in image.files %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-8">
+                                <i data-feather="image"></i> {{ file.name }}
+                                <br>
+                                <small class="text-muted">({{ file.get_formatted_size() }})</small>
+                            </div>
+                            <div class="col-4 text-end">
+                                <a href="{{ url_for('hubfile.download_file', file_id=file.id) }}"
+                                    class="btn btn-outline-primary btn-sm" style="border-radius: 5px;">
+                                    <i data-feather="download"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+
+            {% elif dataset.dataset_type == 'audio_dataset' %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <h4 style="margin-bottom: 0px">Audio files</h4>
+                        <h4 style="margin-bottom: 0px;"><span class="badge bg-dark">{{ dataset.get_files_count()
+                                }}</span></h4>
+                    </div>
+                </div>
+            </div>
+
+            {% for audio in dataset.audios %}
+            {% for file in audio.files %}
+            <div class="list-group-item">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-8">
+                                <i data-feather="music"></i> {{ file.name }}
+                                <br>
+                                <small class="text-muted">({{ file.get_formatted_size() }})</small>
+                            </div>
+                            <div class="col-4 text-end">
+                                <a href="{{ url_for('hubfile.download_file', file_id=file.id) }}"
+                                    class="btn btn-outline-primary btn-sm" style="border-radius: 5px;">
+                                    <i data-feather="download"></i> Download
+                                </a>
+                                <button class="btn btn-outline-secondary btn-sm" style="border-radius: 5px;"
+                                    onclick="viewFile({{ file.id }})">
+                                    <i data-feather="play"></i> Preview
+                                </button>
+                                <button onclick="addAudioToCart({{ audio.id }})" class="btn btn-outline-success btn-sm"
+                                    style="border-radius: 5px;">
+                                    <i data-feather="shopping-cart"></i> Add to cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+            {% endif %}
+
         </div>
 
 
 
-        <a href="/dataset/download/{{ dataset.id }}" class="btn btn-primary mt-3" style="border-radius: 5px;">
+        <a href="/dataset/download/{{ dataset.id }}" class="btn btn-primary mt-3"
+            style="border-radius: 5px; width: 100%;">
             <i data-feather="download" class="center-button-icon"></i>
             Download all ({{ dataset.get_file_total_size_for_human() }})
         </a>
+
+        {% if dataset.feature_models %}
+        <button
+            onclick="addAllModelsToCart({{ dataset.id }}, [{% for fm in dataset.feature_models %}{{ fm.id }}{% if not loop.last %}, {% endif %}{% endfor %}])"
+            class="btn btn-outline-success mt-2" style="border-radius: 5px; width: 100%;">
+            <i data-feather="shopping-cart" class="center-button-icon"></i>
+            Add all models to cart ({{ dataset.feature_models|length }})
+        </button>
+        {% endif %}
+
+        {% if dataset.audios %}
+        <button
+            onclick="addAllAudiosToCart({{ dataset.id }}, [{% for audio in dataset.audios %}{{ audio.id }}{% if not loop.last %}, {% endif %}{% endfor %}])"
+            class="btn btn-outline-success mt-2" style="border-radius: 5px; width: 100%;">
+            <i data-feather="shopping-cart" class="center-button-icon"></i>
+            Add all audios to cart ({{ dataset.audios|length }})
+        </button>
+        {% endif %}
     </div>
 
 </div>
@@ -468,8 +586,16 @@
             </div>
             <div class="modal-body" style="overflow-y: auto; height: calc(100vh - 50px);">
                 <pre id="fileContent"
-                    style="height: 100%; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; padding: 20px; border-radius: 5px; border: 1px solid #ccc;"></pre>
-
+                    style="display:none; height: 100%; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; padding: 20px; border-radius: 5px; border: 1px solid #ccc;"></pre>
+                <div id="fileImageWrapper" style="display:none; text-align:center;">
+                    <img id="fileImage" src="" alt="File preview"
+                        style="max-width:100%; max-height:70vh; border-radius:4px;" />
+                </div>
+                <div id="fileAudioWrapper" style="display:none; text-align:center;">
+                    <audio id="fileAudio" controls style="width:100%; margin-top:10px;">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
             </div>
         </div>
     </div>
@@ -722,11 +848,48 @@
 
     function viewFile(fileId) {
         fetch(`/file/view/${fileId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('fileContent').textContent = data.content;
+            .then(async response => {
+                const contentType = response.headers.get('Content-Type') || '';
                 currentFileId = fileId;
                 document.getElementById('downloadButton').href = `/file/download/${fileId}`;
+
+                const fileContentEl = document.getElementById('fileContent');
+                const fileImageWrapper = document.getElementById('fileImageWrapper');
+                const fileImageEl = document.getElementById('fileImage');
+                const fileAudioWrapper = document.getElementById('fileAudioWrapper');
+                const fileAudioEl = document.getElementById('fileAudio');
+
+                // Reset displays
+                fileContentEl.style.display = 'none';
+                fileImageWrapper.style.display = 'none';
+                fileAudioWrapper.style.display = 'none';
+                fileImageEl.src = '';
+                fileAudioEl.removeAttribute('src');
+                fileAudioEl.load();
+
+                if (contentType.includes('application/json')) {
+                    const data = await response.json();
+                    fileContentEl.textContent = data.content || '';
+                    fileContentEl.style.display = 'block';
+                } else if (contentType.startsWith('image/')) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    fileImageEl.src = url;
+                    fileImageWrapper.style.display = 'block';
+                } else if (contentType.startsWith('audio/')) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    fileAudioEl.src = url;
+                    fileAudioWrapper.style.display = 'block';
+                    fileAudioEl.load();
+                    fileAudioEl.play();
+                } else {
+                    // Fallback: try to read as text
+                    const text = await response.text();
+                    fileContentEl.textContent = text;
+                    fileContentEl.style.display = 'block';
+                }
+
                 var modal = new bootstrap.Modal(document.getElementById('fileViewerModal'));
                 modal.show();
             })
@@ -835,12 +998,139 @@
     */
     function copyToClipboard() {
         const text = document.getElementById('fileContent').textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            console.log('Text copied to clipboard');
-        }).catch(err => {
+        navigator.clipboard.writeText(text).then(function () {
+            console.log('Text successfully copied');
+        }, function (err) {
             console.error('Failed to copy text: ', err);
         });
     }
+
+    async function addAllModelsToCart(datasetId, featureModelIds) {
+        let addedCount = 0;
+        let alreadyInCart = 0;
+
+        // Add models sequentially to avoid session conflicts
+        for (const fmId of featureModelIds) {
+            try {
+                const response = await fetch(`/cart/add/${fmId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    addedCount++;
+                } else if (data.message && data.message.includes('already')) {
+                    alreadyInCart++;
+                }
+            } catch (error) {
+                console.error(`Error adding model ${fmId} to cart:`, error);
+            }
+        }
+
+        // Update cart count after all models are processed
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+        }
+
+        // Show summary message
+        let message = '';
+        if (addedCount > 0) {
+            message += `✓ Added ${addedCount} model${addedCount > 1 ? 's' : ''} to cart! `;
+        }
+        if (alreadyInCart > 0) {
+            message += `${alreadyInCart} already in cart.`;
+        }
+
+        if (typeof showToast === 'function') {
+            showToast(message || 'No models were added', addedCount > 0 ? 'success' : 'warning');
+        } else {
+            alert(message);
+        }
+
+        // Re-render feather icons for any newly added elements
+        feather.replace();
+    }
+
+    async function addAudioToCart(audioId) {
+        try {
+            const response = await fetch(`/cart/add/audio/${audioId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                // Update cart count if exists
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
+                }
+                // Show success feedback
+                if (typeof showToast === 'function') {
+                    showToast('Added to cart!', 'success');
+                } else {
+                    alert('Added to cart!');
+                }
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'warning');
+                } else {
+                    alert(data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+        }
+    }
+
+    async function addAllAudiosToCart(datasetId, audioIds) {
+        let addedCount = 0;
+        let alreadyInCart = 0;
+
+        // Add models sequentially to avoid session conflicts
+        for (const audioId of audioIds) {
+            try {
+                const response = await fetch(`/cart/add/audio/${audioId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    addedCount++;
+                } else if (data.message && data.message.includes('already')) {
+                    alreadyInCart++;
+                }
+            } catch (error) {
+                console.error(`Error adding audio ${audioId} to cart:`, error);
+            }
+        }
+
+        // Update cart count after all models are processed
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+        }
+
+        // Show summary message
+        let message = '';
+        if (addedCount > 0) {
+            message += `✓ Added ${addedCount} audio file${addedCount > 1 ? 's' : ''} to cart! `;
+        }
+        if (alreadyInCart > 0) {
+            message += `${alreadyInCart} already in cart.`;
+        }
+
+        if (typeof showToast === 'function') {
+            showToast(message || 'No audio files were added', addedCount > 0 ? 'success' : 'warning');
+        } else {
+            alert(message);
+        }
+
+        // Re-render feather icons for any newly added elements
+        feather.replace();
+    }
+
 </script>
 
 {% endblock %}
+```

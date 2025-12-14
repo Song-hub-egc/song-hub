@@ -115,6 +115,7 @@ class DownloadCounterUser(HttpUser):
     - host: Automatically set based on environment
     - tasks: Uses DownloadCounterBehavior task set
     """
+
     wait_time = between(1, 3)  # Wait 1-3 seconds between tasks
     host = get_host_for_locust_testing()
     tasks = [DownloadCounterBehavior]
@@ -122,8 +123,6 @@ class DownloadCounterUser(HttpUser):
 
 # Legacy behavior for backward compatibility
 class DatasetBehavior(TaskSet):
-    """Legacy dataset behavior (kept for compatibility)."""
-
     @task
     def dataset(self):
         response = self.client.get("/dataset/upload")
@@ -136,6 +135,7 @@ class DatasetBehavior(TaskSet):
 
 class DatasetUser(HttpUser):
     """Legacy dataset user (kept for compatibility)."""
+
     wait_time = between(5, 9)
     host = get_host_for_locust_testing()
     tasks = [DatasetBehavior]

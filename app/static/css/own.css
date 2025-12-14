@@ -513,3 +513,16 @@
 .btn-delete-comment:hover {
     color: #bb2d3b;
 }
+/* Cart Styles */
+.cart-item {
+    transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.cart-summary {
+    background-color: #f8f9fa;
+    border: 1px solid rgba(0,0,0,.125);
+}
