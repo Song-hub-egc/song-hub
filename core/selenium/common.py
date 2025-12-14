@@ -54,7 +54,7 @@ def initialize_driver():
             driver = webdriver.Remote(command_executor=selenium_hub_url, options=options)
         else:
             raise Exception(f"Driver '{driver_name}' not supported.")
-        
+
         driver.file_detector = LocalFileDetector()
         return driver
 
