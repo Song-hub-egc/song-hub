@@ -122,7 +122,10 @@ class DownloadCounterUser(HttpUser):
 
 # Legacy behavior for backward compatibility
 class DatasetBehavior(TaskSet):
-    """Legacy dataset behavior (kept for compatibility)."""
+    @task
+    def dataset(self):
+        response = self.client.get("/dataset/upload")
+        get_csrf_token(response)
 
     @task
     def trending_home(self):
