@@ -24,13 +24,13 @@ Enlaces de evidencias:
 
 | Miembro               | Horas | Commits | LoC | Test | Issues | Work Item principal       | Dificultad |
 |-----------------------|------:|--------:|----:|-----:|-------:|---------------------------|-----------:|
-| del Castillo Piñero, Daniel     |  50   |   XX    | YY  |  ZZ  |  II    | Breve descripción         | H/M/L      |
-| Gómez Vela, Miguel Ángel     |  50   |   XX    | YY  |  ZZ  |  II    | Breve descripción         | H/M/L      |
-| Manzanos Anento, Diego     |  50   |   XX    | YY  |  ZZ  |  II    | Breve descripción         | H/M/L      |
-| Pérez Gaspar, Pablo      |  50   |   XX    | YY  |  ZZ  |  II    | Breve descripción         | H/M/L      |
-| Petre, Rares Nicolae    |  50   |   XX    | YY  |  ZZ  |  II    | Breve descripción         | H/M/L      |
-| Villalba Fernández, Jesús     |  72   |   33    | 2436  |    |  18    | Trenging datasets, fakenodo, new dataset. A parte de eso: prehooks, workflows, documentación        | H |
-| **TOTAL**             | tHH   |  tXX    | tYY | tZZ  | tII    | Resumen WI                | H(X)/M(Y)/L(Z) |
+| del Castillo Piñero, Daniel     |  50   |   20   | 2363  |  10  |  5    | Download own dataset(carrito)        | M     |
+| Gómez Vela, Miguel Ángel     |  50   |   12    | 794  |  22  |  4    | Download counter         | L      |
+| Manzanos Anento, Diego     |  50   |   11    | 2391  |  23  |  2    | Session management         | H      |
+| Pérez Gaspar, Pablo      |  50   |   26    | 3058  |  19  |  1    | Autenticación(2FA) (H), newDataset (M)         | H,M    |
+| Petre, Rares Nicolae    |  50   |   28    | 1560  |  15  |  2    | Comments on datasets         | L      |
+| Villalba Fernández, Jesús     |  72   |   55    | 4510  |  18  |  20    | Trenging datasets (M), fakenodo (L), newDataset (M). A parte de eso: prehooks, workflows, documentación        | 2M,L |
+| **TOTAL**             | tHH   |  tXX    | tYY | tZZ  | tII    | Resumen WI                | H(2)/M(4)/L(3) |
 
 - **Horas:** esfuerzo estimado/registrado por persona. 
 - **Commits:** realizados por el equipo durante el proyecto.  
