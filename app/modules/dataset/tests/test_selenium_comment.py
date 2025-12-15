@@ -41,11 +41,13 @@ def close_driver(driver):
 
 # === Aux ===
 GLOBAL_DELAY = 0.5
+BOOL_DELAY = True
 
 
 # Velocidad de ejecución (segundos)
 def delayTimes(times=1):
-    time.sleep(GLOBAL_DELAY * times)
+    if BOOL_DELAY:
+        time.sleep(GLOBAL_DELAY * times)
 
 
 host = get_host_for_selenium_testing()
@@ -78,7 +80,7 @@ def test_login(driver):
     delayTimes()
 
     # 2. Hacer click en el botón de login
-    driver.find_element(By.CSS_SELECTOR, ".nav-link:nth-child(1)").click()
+    driver.find_element(By.XPATH, "//a[contains(@href, '/login')]").click()
     delayTimes()
 
     # 3. Introducir credenciales y log in
@@ -99,7 +101,7 @@ def test_login(driver):
         expected_conditions.presence_of_element_located((By.XPATH, "//a[contains(@href, '/logout')]")), "Login success"
     )
     assert driver.find_element(By.XPATH, "//a[contains(@href, '/logout')]")
-    delayTimes(3)
+    delayTimes(4)
 
 
 def test_open_own_dataset(driver):
@@ -124,6 +126,7 @@ def test_open_own_dataset(driver):
         rows[0].find_element(By.TAG_NAME, "a").click()
     except NoSuchElementException:
         pytest.fail("No se encontró enlace en el primer dataset")
+    delayTimes()
 
     # 3. Asegurarse que el dataset se ha abierto y pertenece al usuario
     # Estrategia: Comparar nombre del navbar con nombre de "Uploaded by"
@@ -142,7 +145,7 @@ def test_open_own_dataset(driver):
     assert (
         logged_in_name == uploaded_by_name
     ), f"Dataset verification failed: Expected owner '{logged_in_name}', but found '{uploaded_by_name}'"
-    delayTimes(3)
+    delayTimes(4)
 
 
 def test_post_comment(driver):
@@ -229,7 +232,7 @@ def test_post_comment(driver):
         )
 
     print("Post comment test passed!")
-    delayTimes(3)
+    delayTimes(4)
 
 
 def test_update_comment(driver):
@@ -260,6 +263,7 @@ def test_update_comment(driver):
     # 2. Introducimos el nuevo comentario
     textarea = driver.find_element(By.ID, f"edit-textarea-{comment_id}")
     textarea.clear()
+    delayTimes()
     new_content = f"Updated content {int(time.time())}"
     textarea.send_keys(new_content)
     delayTimes()
@@ -267,8 +271,7 @@ def test_update_comment(driver):
     # 3. Posteamos el nuevo comentario
     save_btn = driver.find_element(By.CSS_SELECTOR, f"#edit-form-{comment_id} button.btn-primary")
     driver.execute_script("arguments[0].click();", save_btn)
-    time.sleep(1)  # Espera extra para asegurar refresco
-    delayTimes()
+    delayTimes(4)  # Espera extra para asegurar refresco
 
     # 4. Comprobamos actualización
     # Recuperamos el elemento de nuevo para evitar StaleElementReferenceException y ver datos actualizados
@@ -289,7 +292,7 @@ def test_update_comment(driver):
         raise AssertionError("Error: Mismo contenido y 'Edited: RelativeTime' presente")
 
     print("Update comment test passed!")
-    delayTimes(3)
+    delayTimes(4)
 
 
 def test_delete_comment(driver):
@@ -308,9 +311,9 @@ def test_delete_comment(driver):
 
     # 2. Confirmamos la eliminación en la alerta
     WebDriverWait(driver, 5).until(expected_conditions.alert_is_present())
-    delayTimes()
+    delayTimes(2)
     driver.switch_to.alert.accept()
-    delayTimes()
+    delayTimes(2)
 
     # 3. Comprobamos eliminación
     try:
@@ -321,5 +324,5 @@ def test_delete_comment(driver):
     except Exception:
         raise AssertionError("El comentario no ha sido eliminado")
 
-    delayTimes(3)
+    delayTimes(4)
     print("Delete comment test passed!")
