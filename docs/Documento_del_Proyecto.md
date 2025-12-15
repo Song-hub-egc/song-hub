@@ -30,7 +30,7 @@ Enlaces de evidencias:
 | Pérez Gaspar, Pablo      |  50   |   26    | 3058  |  19  |  1    | Autenticación(2FA) (H), newDataset (M)         | H,M    |
 | Petre, Rares Nicolae    |  50   |   28    | 1560  |  15  |  2    | Comments on datasets         | L      |
 | Villalba Fernández, Jesús     |  72   |   55    | 4510  |  18  |  20    | Trenging datasets (M), fakenodo (L), newDataset (M). A parte de eso: prehooks, workflows, documentación        | 2M,L |
-| **TOTAL**             | tHH   |  tXX    | tYY | tZZ  | tII    | Resumen WI                | H(2)/M(4)/L(3) |
+| **TOTAL**             | 322   |  152    | 14676 | 107  | 34    | Resumen WI                | H(2)/M(4)/L(3) |
 
 - **Horas:** esfuerzo estimado/registrado por persona. 
 - **Commits:** realizados por el equipo durante el proyecto.  
