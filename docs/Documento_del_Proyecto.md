@@ -57,20 +57,20 @@ Además, se dockerizó la aplicación para simplificar el despliegue: cualquier 
 ### Principales mejoras funcionales
 
 Las funcionalidades añadidas y rediseñadas fueron clave para transformar UVLHUB en un sistema mucho más útil y dinámico:
-	•	Autenticación en dos factores (2FA):
-Ahora el usuario puede habilitar un segundo paso de verificación mediante un código QR. Aumenta notablemente la seguridad al requerir una clave temporal además de la contraseña.
-	•	Carrito de descargas:
-Permite seleccionar varios datasets, añadirlos a un carrito y descargarlos todos de una sola vez. Es una de las mejoras más notables en comodidad y eficiencia.
-	•	Datasets de moda (Trending):
-La página principal muestra los datasets más vistos y descargados, gracias a un sistema de métricas que registra la actividad de los usuarios.
-	•	Comentarios en datasets:
-Cada dataset permite abrir hilos de conversación, fomentando la interacción entre usuarios y creando un espacio de colaboración dentro de la propia plataforma.
-	•	Sesiones activas:
-Los usuarios pueden ver qué sesiones tienen abiertas y cerrarlas desde su perfil, reforzando la seguridad y el control de su cuenta.
-	•	Nuevos tipos de dataset:
-Además de los UVL, el sistema ahora admite datasets de imágenes y de audio, con la posibilidad de reproducir los audios desde la propia interfaz.
-	•	Fakenodo y DOIs simulados:
-Se desarrolló un módulo que emula el comportamiento de Zenodo, generando identificadores DOI y gestionando webhooks sin depender de servicios externos.
+
+- Autenticación en dos factores (2FA): Ahora el usuario puede habilitar un segundo paso de verificación mediante un código QR. Aumenta notablemente la seguridad al requerir una clave temporal además de la contraseña.
+
+- Carrito de descargas: Permite seleccionar varios datasets, añadirlos a un carrito y descargarlos todos de una sola vez. Es una de las mejoras más notables en comodidad y eficiencia.
+
+- Datasets de moda (Trending): La página principal muestra los datasets más vistos y descargados, gracias a un sistema de métricas que registra la actividad de los usuarios.
+
+- Comentarios en datasets: Cada dataset permite abrir hilos de conversación, fomentando la interacción entre usuarios y creando un espacio de colaboración dentro de la propia plataforma.
+
+- Sesiones activas: Los usuarios pueden ver qué sesiones tienen abiertas y cerrarlas desde su perfil, reforzando la seguridad y el control de su cuenta.
+
+- Nuevos tipos de dataset: Además de los UVL, el sistema ahora admite datasets de imágenes y de audio, con la posibilidad de reproducir los audios desde la propia interfaz.
+
+- Fakenodo y DOIs simulados:Se desarrolló un módulo que emula el comportamiento de Zenodo, generando identificadores DOI y gestionando webhooks sin depender de servicios externos.
 
 Estas funcionalidades, junto con los contadores de descargas y las estadísticas, convierten Song-Hub en un sistema más atractivo, participativo y transparente.
 
@@ -82,10 +82,11 @@ Desde el punto de vista técnico, el sistema se apoya en Flask (Python 3.12), co
 Para facilitar el trabajo en equipo y evitar problemas de “en mi máquina funciona”, se ha dockerizado el proyecto. Mediante Docker y docker-compose se pueden levantar los servicios principales (backend, base de datos, etc.) con un solo comando. Además, se han creado scripts que automatizan la recreación de la base de datos, la aplicación de migraciones y el seed de datos de prueba, simplificando enormemente la puesta en marcha del entorno.
 
 En cuanto al ciclo de desarrollo, se ha utilizado GitHub como repositorio central con un flujo de ramas tipo EGC-flow, donde la rama trunk concentra el desarrollo diario y main se reserva para versiones estables. Sobre este modelo se han montado workflows de GitHub Actions que:
-	•	ejecutan tests con pytest y los comandos de rosemary,
-	•	pasan linters (black, isort, flake8),
-	•	analizan la calidad del código con herramientas externas,
-	•	y automatizan el despliegue en Render y la publicación de imágenes en Docker Hub.
+
+- ejecutan tests con pytest y los comandos de rosemary,
+- pasan linters (black, isort, flake8),
+- analizan la calidad del código con herramientas externas,
+- automatizan el despliegue en Render y la publicación de imágenes en Docker Hub.
 
 También se han integrado herramientas de testing como Selenium (para pruebas de interfaz) y Locust (para pruebas de carga), que se ejecutan en momentos concretos para validar tanto el comportamiento funcional como el rendimiento bajo carga.
 
@@ -158,42 +159,23 @@ A nivel de backend, el código de Song-Hub se organiza principalmente dentro de 
 
 La estructura simplificada de app/modules es la siguiente:
 
-app/
-└── modules/
-    ├── audiodataset/
-    ├── auth/
-    ├── cart/
-    ├── dataset/
-    ├── explore/
-    ├── fakenodo/
-    ├── featuremodel/
-    ├── flamapy/
-    ├── hubfile/
-    ├── imagedataset/
-    ├── profile/
-    ├── public/
-    ├── team/
-    ├── webhook/
-    ├── zenodo/
-    ├── __init__.py
-    ├── __pycache__/
-    └── .pytest_cache/
+![alt text](image.png)
 
 Los directorios __pycache__ y .pytest_cache son generados automáticamente por Python y pytest, así que no forman parte de la lógica del sistema como tal.
 Los módulos funcionales principales son:
-	•	auth/: toda la parte de autenticación y gestión de usuarios, incluyendo login, registro y el sistema de doble factor (2FA).
-	•	public/: vistas públicas de la aplicación (portada, landing, listado general, etc.), incluyendo la sección donde se muestran los datasets más populares o en tendencia.
-	•	profile/: gestión del perfil de usuario, edición de datos personales y visualización de sesiones activas.
-	•	dataset/: lógica principal para la creación, edición, visualización y descarga de datasets genéricos.
-	•	audiodataset/: funcionalidades específicas para datasets de audio (subida de canciones, botón de preview, etc.).
-	•	imagedataset/: funcionalidades específicas para datasets de imágenes.
-	•	cart/: implementación del carrito de descargas, donde el usuario puede acumular varios datasets y descargarlos juntos.
-	•	explore/: búsquedas, filtrado y exploración de datasets según tipo, popularidad, etiquetas, etc.
-	•	fakenodo/ y zenodo/: módulos que simulan la integración con Zenodo; se encargan de generar y gestionar los DOIs que se asignan a los datasets nuevos.
-	•	featuremodel/ y flamapy/: heredados del sistema original UVLHUB, relacionados con la parte de feature models y la integración con Flamapy. Algunos de estos componentes se mantienen por compatibilidad y como soporte a funcionalidades previas.
-	•	hubfile/: gestión de archivos asociados al hub (subida, almacenamiento y descarga de ficheros relacionados).
-	•	team/: vistas relacionadas con la información del equipo (páginas estáticas tipo “sobre el proyecto / sobre el equipo”).
-	•	webhook/: lógica de integración con servicios externos mediante webhooks (por ejemplo, notificaciones o sincronización con otros sistemas).
+- auth/: toda la parte de autenticación y gestión de usuarios, incluyendo login, registro y el sistema de doble factor (2FA).
+- public/: vistas públicas de la aplicación (portada, landing, listado general, etc.), incluyendo la sección donde se muestran los datasets más populares o en tendencia.
+- profile/: gestión del perfil de usuario, edición de datos personales y visualización de sesiones activas.
+- dataset/: lógica principal para la creación, edición, visualización y descarga de datasets genéricos.
+- audiodataset/: funcionalidades específicas para datasets de audio (subida de canciones, botón de preview, etc.).
+- imagedataset/: funcionalidades específicas para datasets de imágenes.
+- cart/: implementación del carrito de descargas, donde el usuario puede acumular varios datasets y descargarlos juntos.
+- explore/: búsquedas, filtrado y exploración de datasets según tipo, popularidad, etiquetas, etc.
+- fakenodo/ y zenodo/: módulos que simulan la integración con Zenodo; se encargan de generar y gestionar los DOIs que se asignan a los datasets nuevos.
+- featuremodel/ y flamapy/: heredados del sistema original UVLHUB, relacionados con la parte de feature models y la integración con Flamapy. Algunos de estos componentes se mantienen por compatibilidad y como soporte a funcionalidades previas.
+- hubfile/: gestión de archivos asociados al hub (subida, almacenamiento y descarga de ficheros relacionados).
+- team/: vistas relacionadas con la información del equipo (páginas estáticas tipo “sobre el proyecto / sobre el equipo”).
+- webhook/: lógica de integración con servicios externos mediante webhooks (por ejemplo, notificaciones o sincronización con otros sistemas).
 
 En la mayoría de estos módulos se sigue una estructura parecida:
 suele haber ficheros como routes.py (rutas y controladores Flask), models.py (modelos de base de datos), services.py o similares para la lógica de negocio y, cuando aplica, una carpeta tests/ con las pruebas asociadas a ese módulo.
@@ -238,9 +220,9 @@ El proyecto Song-Hub está desarrollado principalmente en Python 3.12, que usamo
 La base de datos está montada sobre MariaDB.
 
 Entre las librerías más importantes están:
-	•	pytest y rosemary, para los tests unitarios e integrados.
-	•	black, isort, flake8 y autoflake, para mantener el código limpio y con estilo uniforme.
-	•	El CLI interno rosemary, que usamos a diario para ejecutar linters, correr tests, hacer seeders, limpiar logs o automatizar despliegues.
+- pytest y rosemary, para los tests unitarios e integrados.
+- black, isort, flake8 y autoflake, para mantener el código limpio y con estilo uniforme.
+- El CLI interno rosemary, que usamos a diario para ejecutar linters, correr tests, hacer seeders, limpiar logs o automatizar despliegues.
 
 También usamos Node.js 20 para tareas puntuales, como recompilar los assets estáticos, ejecutar Selenium dentro de los contenedores o preparar el build del frontend en entornos de staging.
 Aun así, todo el corazón lógico del sistema y los pipelines de CI/CD se mantienen íntegramente en Python, lo que hace que el proyecto sea más sencillo de mantener y que cualquier miembro del equipo pueda ponerse al día sin problema.
@@ -250,28 +232,28 @@ Aun así, todo el corazón lógico del sistema y los pipelines de CI/CD se manti
 
 El proyecto utilizó Git como sistema de control de versiones, con GitHub como repositorio remoto.
 Adoptamos un flujo EGC-FLOW:
-	•	trunk → rama principal de desarrollo diario
-	•	main → versiones estables
+- trunk → rama principal de desarrollo diario
+- main → versiones estables
 
 Las ramas se crean desde trunk y se nombraron de la siguiente manera:
-	•	feature/<nombre> → nuevas funcionalidades
-	•	fix/<nombre> → corrección de errores
+- feature/<nombre> → nuevas funcionalidades
+- fix/<nombre> → corrección de errores
 
 La integración continua (CI/CD) se gestionó con GitHub Actions, incluyendo distintos workflows:
-	•	CI_pytest: ejecuta los tests de pytest sobre contenedores con PostgreSQL/MariaDB
-   •	CI_lint: aplica black, isort y flake8
-	•	CI_commits: valida el formato Conventional Commits
-	•	CI_sonarqube, CI_codacy: analizan la calidad del código
-	•	CD_dockerhub, CD_render: publican imágenes en Docker Hub y despliegan automáticamente en Render
+- CI_pytest: ejecuta los tests de pytest sobre contenedores con PostgreSQL/MariaDB
+- CI_lint: aplica black, isort y flake8
+- CI_commits: valida el formato Conventional Commits
+- CI_sonarqube, CI_codacy: analizan la calidad del código
+- CD_dockerhub, CD_render: publican imágenes en Docker Hub y despliegan automáticamente en Render
 
 Además, se configuraron hooks locales en .git/hooks (en el proyecto está en la carpeta /githooks)para que todo tuviera el estilo del lint antes de permitir commits y que se validara que el formato del commit era Conventional Commits.
 
 #### Pruebas 
 
-	•	rosemary test → comando para correr los tests unitarios
-	•	rosemary coverage → comando para medir la cobertura
-	•	pytest -v → comando para probar los tests de interfaz (Selenium)
-	•	locust -f app/modules/dataset/tests/locustfile.py → comando para las pruebas de carga (locust)
+- rosemary test → comando para correr los tests unitarios
+- rosemary coverage → comando para medir la cobertura
+- pytest -v → comando para probar los tests de interfaz (Selenium)
+- locust -f app/modules/dataset/tests/locustfile.py → comando para las pruebas de carga (locust)
 
 Los workflows de GitHub Actions se ejecutan en cada rama al subir cambios, mientras que las pruebas unitarias, de interfaz y de carga se llevan a cabo manualmente.
 
@@ -347,10 +329,10 @@ En conjunto, Song-Hub se consolida como una aplicación moderna, bien estructura
 
 #### Trabajo futuro
 El proyecto deja abiertas varias líneas de mejora que permitirán seguir ampliando sus capacidades y alcance:
-	•	Internacionalización: incorporar soporte multilingüe para que Song-Hub pueda ser utilizado fuera del ámbito hispanohablante.
-	•	Interacción social: añadir valoraciones o reacciones con emojis (“me gusta”, “favorito”, etc.) para hacer la plataforma más participativa.
-	•	Notificaciones y suscripciones: implementar alertas internas o por correo para avisar de nuevas versiones, respuestas o actividad en datasets seguidos.
-	•	Monitoreo y observabilidad: integrar métricas y sistemas de logs centralizados que permitan detectar incidencias y medir el rendimiento en tiempo real.
-	•	Automatización de QA: ampliar las pruebas unitarias, de interfaz (Selenium) y de carga (Locust), aumentando la cobertura y asegurando una mayor estabilidad en los despliegues.
+- Internacionalización: incorporar soporte multilingüe para que Song-Hub pueda ser utilizado fuera del ámbito hispanohablante.
+- Interacción social: añadir valoraciones o reacciones con emojis (“me gusta”, “favorito”, etc.) para hacer la plataforma más participativa.
+- Notificaciones y suscripciones: implementar alertas internas o por correo para avisar de nuevas versiones, respuestas o actividad en datasets seguidos.
+- Monitoreo y observabilidad: integrar métricas y sistemas de logs centralizados que permitan detectar incidencias y medir el rendimiento en tiempo real.
+- Automatización de QA: ampliar las pruebas unitarias, de interfaz (Selenium) y de carga (Locust), aumentando la cobertura y asegurando una mayor estabilidad en los despliegues.
 
 Estas mejoras futuras asegurarán que Song-Hub siga evolucionando como un proyecto vivo, orientado a la innovación y a la mejora continua tanto en su funcionalidad como en su experiencia de usuario.
