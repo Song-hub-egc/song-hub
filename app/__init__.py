@@ -34,6 +34,24 @@ def create_app(config_name="development"):
 
     # Initilize Session
     app.config["SESSION_SQLALCHEMY"] = db
+    from flask_session.sqlalchemy import sqlalchemy as flask_session_module
+
+    def patched_create_session_model(db, table_name, *args, **kwargs):
+        """Patched version that adds extend_existing=True to avoid table redefinition errors"""
+
+        class Session(db.Model):
+            __tablename__ = table_name
+            __table_args__ = {"extend_existing": True}
+
+            id = db.Column(db.Integer, primary_key=True)
+            session_id = db.Column(db.String(255), unique=True, nullable=False)
+            data = db.Column(db.LargeBinary, nullable=False)
+            expiry = db.Column(db.DateTime, nullable=False)
+
+        return Session
+
+    flask_session_module.create_session_model = patched_create_session_model
+
     sess.init_app(app)
 
     # Register modules
