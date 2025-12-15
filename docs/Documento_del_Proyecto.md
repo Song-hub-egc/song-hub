@@ -2,15 +2,18 @@
 
 **Proyecto:** SongHub  
 **Curso:** 2025/2026  
-**Equipo:** Grupo 1 
+**Equipo:** Grupo 1
+
 **Miembros:** 
 - del Castillo Piñero, Daniel  
 - Gómez Vela, Miguel Ángel 
 - Manzanos Anento, Diego  
 - Pérez Gaspar, Pablo  
 - Petre, Rares Nicolae  
-- Villalba Fernández, Jesús   
+- Villalba Fernández, Jesús
+  
 **Repositorio:** https://github.com/Song-hub-egc/song-hub.git
+
 **Última edición:** 15/12/2025
 
 ## Indicadores del proyecto
