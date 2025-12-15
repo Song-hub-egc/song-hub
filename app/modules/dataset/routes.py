@@ -19,8 +19,9 @@ from flask import (
 )
 from flask_login import current_user, login_required
 
+from app.modules.auth.models import User
 from app.modules.dataset import dataset_bp
-from app.modules.dataset.models import DSDownloadRecord
+from app.modules.dataset.models import DataSet, DSDownloadRecord
 from app.modules.dataset.services import (
     AuthorService,
     DatasetCommentService,
@@ -132,6 +133,18 @@ def list_dataset():
         datasets=dataset_service.get_synchronized(current_user.id),
         local_datasets=dataset_service.get_unsynchronized(current_user.id),
     )
+
+
+@dataset_bp.route("/user/<int:user_id>/datasets", methods=["GET"])
+def user_datasets(user_id):
+    """Public page that lists datasets uploaded by the given user."""
+    user = User.query.get(user_id)
+    if not user:
+        abort(404)
+
+    datasets = DataSet.query.filter_by(user_id=user_id).order_by(DataSet.created_at.desc()).all()
+
+    return render_template("dataset/user_datasets.html", user=user, datasets=datasets)
 
 
 @dataset_bp.route("/dataset/file/upload", methods=["POST"])

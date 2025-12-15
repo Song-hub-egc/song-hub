@@ -1,10 +1,12 @@
 {% extends "base_template.html" %}
 
-{% block title %}{{ user.profile.surname }}, {{ user.profile.name }}'s datasets{% endblock %}
+{% set display_name = (user.profile.surname ~ ', ' ~ user.profile.name) if user.profile else user.email %}
+
+{% block title %}{{ display_name }}'s datasets{% endblock %}
 
 {% block content %}
 
-    <h1 class="h3 mb-3">{{ user.profile.surname }}, {{ user.profile.name }}'s datasets</h1>
+    <h1 class="h3 mb-3">{{ display_name }}'s datasets</h1>
 
     {% if datasets %}
         <div class="col-12">
@@ -17,20 +19,24 @@
                             <th>Title</th>
                             <th>Description</th>
                             <th>Publication type</th>
-                        </tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Publication type</th>
                         </thead>
                         <tbody>
                         {% for dataset in datasets %}
                             <tr>
                                 <td>
-                                    <a href="{{ dataset.get_uvlhub_doi() }}">
+                                    {% if dataset.get_uvlhub_doi() %}
+                                        <a href="{{ dataset.get_uvlhub_doi() }}" target="_blank">
+                                            {{ dataset.ds_meta_data.title }}
+                                        </a>
+                                    {% else %}
                                         {{ dataset.ds_meta_data.title }}
-                                    </a>
+                                    {% endif %}
                                 </td>
                                 <td>{{ dataset.ds_meta_data.description }}</td>
-                                <td><a href="{{ dataset.get_uvlhub_doi() }}"
-                                       target="_blank">{{ dataset.get_uvlhub_doi() }}</a></td>
-                                <td>
+                                <td>{{ dataset.get_cleaned_publication_type() }}</td>
                             </tr>
                         {% endfor %}
                         </tbody>
