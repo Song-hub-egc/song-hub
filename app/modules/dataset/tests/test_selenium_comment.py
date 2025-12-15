@@ -78,7 +78,7 @@ def test_login(driver):
     delayTimes()
 
     # 2. Hacer click en el botón de login
-    driver.find_element(By.CSS_SELECTOR, ".nav-link:nth-child(1)").click()
+    driver.find_element(By.XPATH, "//a[contains(@href, '/login')]").click()
     delayTimes()
 
     # 3. Introducir credenciales y log in
