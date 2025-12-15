@@ -138,6 +138,22 @@ def test_upload_dataset():
         close_driver(driver)
 
 
+def test_user_datasets():
+    driver = initialize_driver()
+
+    try:
+        host = get_host_for_selenium_testing()
+        driver.get(host)
+        driver.set_window_size(2174, 1368)
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, "Sample dataset 4"))).click()
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, "Doe, Jane"))).click()
+        datasets = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "card-body"))).text
+        assert "Sample dataset 2" in datasets
+        assert "Sample dataset 4" in datasets
+    finally:
+        close_driver(driver)
+
+
 def test_trending_datasets():
     driver = initialize_driver()
 
