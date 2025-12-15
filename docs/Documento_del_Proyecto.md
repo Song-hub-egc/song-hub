@@ -264,38 +264,38 @@ Los workflows de GitHub Actions se ejecutan en cada rama al subir cambios, mient
 
 1. Clonar el repositorio
 
-   git clone https://github.com/Song-hub-egc/song-hub.git
-   cd song-hub
+   - git clone https://github.com/Song-hub-egc/song-hub.git
+   - cd song-hub
 
 2. Crear el entorno virtual
 
-   python3.12 -m venv venv
-   source venv/bin/activate
-   pip install --upgrade pip
-   pip install -r requirements.txt
-   pip install -e .
+   - python3.12 -m venv venv
+   - source venv/bin/activate
+   - pip install --upgrade pip
+   - pip install -r requirements.txt
+   - pip install -e .
 
 3. Configurar la base de datos de MariaDB
 
    Todos estos pasos lo hace automáticamente si llamas al script siguiente:
 
-   sudo ./scriptbasededatos.sh
+   - sudo ./scriptbasededatos.sh
 
-   sudo mysql -u root -p
-   CREATE DATABASE uvlhubdb;
-   CREATE DATABASE uvlhubdb_test;
-   CREATE USER 'uvlhubdb_user'@'localhost' IDENTIFIED BY 'uvlhubdb_password';
-   GRANT ALL PRIVILEGES ON uvlhubdb.* TO 'uvlhubdb_user'@'localhost';
-   GRANT ALL PRIVILEGES ON uvlhubdb_test.* TO 'uvlhubdb_user'@'localhost';
-   FLUSH PRIVILEGES;
-   EXIT;
-   flask db upgrade
-   rosemary db:seed
+   - sudo mysql -u root -p
+   - CREATE DATABASE uvlhubdb;
+   - CREATE DATABASE uvlhubdb_test;
+   - CREATE USER 'uvlhubdb_user'@'localhost' IDENTIFIED BY 'uvlhubdb_password';
+   - GRANT ALL PRIVILEGES ON uvlhubdb.* TO 'uvlhubdb_user'@'localhost';
+   - GRANT ALL PRIVILEGES ON uvlhubdb_test.* TO 'uvlhubdb_user'@'localhost';
+   - FLUSH PRIVILEGES;
+   - EXIT;
+   - flask db upgrade
+   - rosemary db:seed
 
 
 4. Correr la aplicación
 
-   flask run --host=0.0.0.0 --reload --debug (puerto 5000)
+   - flask run --host=0.0.0.0 --reload --debug (puerto 5000)
 
 
 ### Ejercicio de propuesta de cambio
