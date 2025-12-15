@@ -11,8 +11,10 @@ Run from project root:
     locust -f app/modules/dataset/tests/locustfile.py
 """
 
+import re
 from datetime import datetime
 
+from bs4 import BeautifulSoup
 from locust import HttpUser, TaskSet, between, task
 
 from core.environment.host import get_host_for_locust_testing
@@ -42,6 +44,16 @@ class DownloadCounterBehavior(TaskSet):
             },
             name="/login (POST)",
         )
+
+    def _extract_user_datasets_url(self, html):
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Busca enlaces que vayan a /user/<id>/datasets
+        for a in soup.find_all("a", href=True):
+            if re.match(r"/user/\d+/datasets", a["href"]):
+                return a["href"]
+
+        return None
 
     @task(3)
     def view_dataset_list(self):
