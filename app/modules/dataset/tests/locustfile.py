@@ -11,8 +11,11 @@ Run from project root:
     locust -f app/modules/dataset/tests/locustfile.py
 """
 
+import re
 from datetime import datetime
+from urllib.parse import urlparse
 
+from bs4 import BeautifulSoup
 from locust import HttpUser, TaskSet, between, task
 
 from core.environment.host import get_host_for_locust_testing
@@ -26,6 +29,7 @@ class DownloadCounterBehavior(TaskSet):
 
     def on_start(self):
         """Called when a simulated user starts. Login the user."""
+        self.user_datasets_url = None
         self.login()
 
     def login(self):
@@ -43,6 +47,20 @@ class DownloadCounterBehavior(TaskSet):
             name="/login (POST)",
         )
 
+    def _extract_user_datasets_url(self, html):
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Busca enlaces que vayan a /user/<id>/datasets
+        for a in soup.find_all("a", href=True):
+            parsed_href = urlparse(a["href"])
+            href_path = parsed_href.path or a["href"]
+            normalized_path = href_path if href_path.startswith("/") else f"/{href_path}"
+
+            if re.match(r"^/user/\d+/datasets/?$", normalized_path):
+                return normalized_path
+
+        return None
+
     @task(3)
     def view_dataset_list(self):
         """View the dataset list page (high frequency)."""
@@ -55,12 +73,23 @@ class DownloadCounterBehavior(TaskSet):
         This simulates users checking the download count.
         """
         # Assuming dataset with ID 1 exists
-        response = self.client.get("/dataset/unsynchronized/1", name="View Dataset Detail")
+        response = self.client.get("/dataset/unsynchronized/1/", name="View Dataset Detail")
 
-        # Verify the response contains download counter
-        if response.status_code == 200 and "Downloads" in response.text:
-            # Successfully viewed download counter
-            pass
+        if response.status_code == 200:
+            user_datasets_url = self._extract_user_datasets_url(response.text)
+            if user_datasets_url:
+                self.user_datasets_url = user_datasets_url
+                # Follow the link so Locust records the navigation to the user datasets page.
+                self.client.get(user_datasets_url, name="View User Datasets")
+
+    @task(1)
+    def view_user_datasets(self):
+        """
+        Visit the public page listing datasets uploaded by the dataset owner.
+        Falls back to user 1 if we could not extract a link yet.
+        """
+        target = getattr(self, "user_datasets_url", None) or "/user/1/datasets"
+        self.client.get(target, name="View User Datasets")
 
     @task(1)
     def download_dataset(self):
